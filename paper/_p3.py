@@ -1,0 +1,25 @@
+import sys
+s=open('R2.tex',encoding='utf-8').read()
+def rep(a,b,n=1):
+    global s
+    c=s.count(a)
+    if c!=n: sys.exit(f'count {c}!={n}: {a[:90]}')
+    s=s.replace(a,b)
+rep(r"Inclusion probabilities are $\pi_h=n_h/N_h$, where $n_h$ counts \emph{labelled} notices; in stratum C one of the 250 drawn notices received no parsable primary label, so $\pi_C$ is nonresponse-adjusted and valid if the failure is unrelated to $X$ within the stratum (Table~\ref{tab:design}).",
+    r"As pre-specified, inclusion probabilities are $\pi_h=n^{\mathrm{drawn}}_h/N_h$; the one stratum-C notice without a parsable primary label is treated as missing at random within its stratum (Table~\ref{tab:design}).")
+rep(r"$\pi_h=n_h/N_h$ (for D, $450/51{,}756$)", r"$\pi_h=\mathrm{drawn}/N_h$ (for D, $450/51{,}756$)")
+rep("& 1,526 & 250 & 249 & 0.163 & 5 & 31", "& 1,526 & 250 & 249 & 0.164 & 5 & 31")
+rep("CI 1.57--3.21", "CI 1.56--3.21", 2)
+rep(r"1.01 ($X_{\mathrm{adj}}$; CI 0.38--1.83), 0.57 ($X_\wedge$; CI 0.26--1.08), and 1.52 points ($X_\vee$; CI 0.78--2.43)", r"1.06 ($X_{\mathrm{adj}}$; CI 0.43--1.87), 0.57 ($X_\wedge$; CI 0.26--1.07), and 1.49 points ($X_\vee$; CI 0.74--2.40)")
+rep("(2.32,7) += (0.89,0) -= (0.75,0)", "(2.32,7) += (0.89,0) -= (0.76,0)")
+rep("(1.84,6) += (0.82,0) -= (0.63,0)", "(1.89,6) += (0.82,0) -= (0.63,0)")
+rep("(1.40,5) += (0.51,0) -= (0.31,0)", "(1.40,5) += (0.50,0) -= (0.31,0)")
+rep("(2.36,4) += (0.90,0) -= (0.75,0)", "(2.32,4) += (0.91,0) -= (0.75,0)")
+rep(r"($\hat\beta=-124.2$ points, sandwich SE 1,812; bootstrap CI $-495$ to 429;", r"($\hat\beta=-123.5$ points, sandwich SE 1,799; bootstrap CI $-561$ to 367;")
+rep("(mean 0.115, median 0.153) relative to its dispersion (mean SE 2.27), but 95\\% sandwich intervals covered it in only 86\\% of replications", "(mean 0.164, median 0.135) relative to its dispersion (mean SE 2.10), but 95\\% sandwich intervals covered it in only 85.5\\% of replications")
+rep("sandwich SE 1,812.}", "sandwich SE 1,799.}")
+rep(r"DSL with M5 (pre-specified) & -- & $-124.2$ & [$-495$, 429]$^\ddagger$", r"DSL with M5 (pre-specified) & -- & $-123.5$ & [$-561$, 367]$^\ddagger$")
+rep(r"reference$^\dagger$ & -- & $-42.2$ & (177.2)", r"reference$^\dagger$ & -- & $-41.9$ & (177.1)")
+rep(r"DSL with M5, $X_\wedge$ reference & -- & 6.0 & [$-6.7$, 18.8]", r"DSL with M5, $X_\wedge$ reference & -- & 6.1 & [$-6.8$, 18.9]")
+rep(r" The full-control M5 values come from the diagnostic re-run and differ slightly from Table~\ref{tab:reg} ($-124.2$, SE 1,812), as is consistent with an ill-conditioned $\hat{A}$.", "")
+open('R2.tex','w',encoding='utf-8').write(s); print('ok')

@@ -30,7 +30,7 @@ fr["y_s"] = [a if not pd.isna(a) else rec_s.get(p) for a, p in zip(fr.y_s0, fr.p
 fr["y_a"] = [adj.get(p) for p in fr.pub]
 S = fr.index[(fr.sampled == 1) & fr.y_p.notna()].to_numpy()
 Nh = fr.groupby("stratum").size()
-nh_real = fr.loc[S].groupby("stratum").size()
+nh_real = fr[fr.sampled == 1].groupby("stratum").size()  # design (drawn) counts, as pre-specified (name kept)
 fr["pi_r"] = fr.stratum.map((nh_real / Nh).to_dict())
 w = 1 / fr.loc[S, "pi_r"].to_numpy(); st = fr.loc[S, "stratum"].to_numpy(); eng = (fr.lang == "ENG").to_numpy()
 rng = np.random.default_rng(SEED)
@@ -179,6 +179,7 @@ out["n_cpv_levels_used"] = int(cpv.nunique())
 json.dump(out, open(os.path.join(R, "r1_analyses.json"), "w", encoding="utf-8"), indent=1, default=float, ensure_ascii=False)
 print(json.dumps({k: v for k, v in out.items() if k not in ("CD_positives",)}, indent=1, default=float, ensure_ascii=False)[:9000])
 for c in out["CD_positives"]: print(c)
+
 
 
 

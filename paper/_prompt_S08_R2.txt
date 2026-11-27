@@ -1,0 +1,1775 @@
+아래 수정사항을 탑티어 SCI학회지에 안정적으로  투고 가능하게끔 보완점을 꼼꼼히 검토한 후에 수정사항을 반영해서 논문을 수정해줘! 학술적으로 아주아주 엄밀하고 꼼꼼하게 수정한후  새로운 수정본 파일로 만들어줘! 수정본은 반드시 전체 LNCS 14쪽 이내(참고문헌 포함, 공식 CFP 확인 후 조정)(가능하면 LNCS 14쪽 이내(참고문헌 포함, 공식 CFP 확인 후 조정))로 유지하고, 수정 후 실제 쪽수를 확인해줘!
+학술적으로 아주아주 정밀하게 검토해줘! 
+
+(작업 방식 안내: 원고는 LaTeX(llncs)이며 아래 [원고 R1 LaTeX] 전문이다(참고문헌은 refs.bib, 아래 키 목록 그대로 사용). 숫자는 [R2 추가 분석 결과(로그 값)]와 원고에 이미 있는 값만 써라. 새 수치를 만들지 마라. 공식 CFP: https://sig-bi.jp/ai-biz2027.html (LNCS 16쪽 이내, 그림·참고문헌 포함, single-blind) — 우리 목표는 그림 2개를 넣고도 14쪽 이내이므로 본문을 약 1쪽 줄여라. 사람 전문가 검증은 수행하지 않았다(정직하게 한계로). 저자·소속·선언문(credits 블록)은 바꾸지 마라. 출력: (1) 15항목 반영/미반영 표, (2) 수정 원고 LaTeX 전문(파일), (3) 쪽수 메모.)
+
+[수정사항: ChatGPT 검토 R2]
+# R2 ChatGPT 검토 (7단계 반복)
+- 대화: https://chatgpt.com/c/6b0905ac-094c-83ec-a2af-eab868709eef
+- 응답 모델 기록: gpt-6-2-thinking
+
+---
+
+# 연구 초안 R1 정밀 검토 및 우선순위별 보완사항 15개
+
+## 1. 종합 평가
+
+현재 R1은 단순히 다국어 공공조달 데이터에서 AI 관련 문서를 분류하는 성능 비교 연구를 넘어, **텍스트 기반 측정오차가 모집단 비율 추정과 후속 회귀분석에 어떤 영향을 미치는지를 실증적으로 분석하는 방법론적 연구**로 발전했습니다.
+
+특히 다음과 같은 부분은 학술적 강점입니다.
+
+- 54,160건의 실제 다국어 공공조달 데이터 활용
+- 1,199건의 층화확률표본과 설계가중치 적용
+- 사전 분석계획과 사후 탐색적 분석의 구분
+- 단순 분류 성능을 넘어 HT 및 DSL 기반 통계적 추론 수행
+- 연구가설과 반대되는 결과 및 추정 실패의 투명한 보고
+- 영향력이 큰 표본과 참조 라벨의 민감도 공개
+- 코드, 프롬프트, 분석계획 및 파생 데이터 공개 방침
+
+다만, 상위권 SCI(E) 저널의 심사 기준에서 보면 아직 중요한 취약점이 있습니다. 특히 **LLM 참조 라벨의 타당성, 희귀사건에 대한 통계적 추론, 공공조달 변수의 구성 타당성, 교차적합과 표본설계의 정합성**은 단순한 문체 수정으로 해결되지 않는 문제입니다.
+
+이번 검토에서는 새로운 대규모 실험이나 모델 추가보다는 기존 코드와 데이터를 재사용하여 해결할 수 있는 보완사항을 우선하겠습니다. 현재 14쪽에서 그림까지 추가해야 하므로 본문 순증가를 최소화하는 방향으로 평가합니다.
+
+### 투고처 및 분량 기준
+
+JSAI-isAI 2027 공식 홈페이지에서 AI-Biz2027 워크숍 개최 목록을 확인했습니다. 다만 검색을 통해 확인된 16쪽 제한은 AI-Biz2026 공식 CFP에도 명시된 기준이며, AI-Biz2027의 개별 CFP 및 Supplementary 허용 조건은 이번 검색에서 독립적으로 확인하지 못했습니다. 따라서 제공하신 2027년 16쪽 제한을 잠정 적용하되, 자체 목표인 14쪽 이내를 유지하는 방향으로 검토하겠습니다. <Cite refs={["turn180515search0","turn180515search1","turn180515search19"]}/>
+
+AI-Biz2027 Springer LNCS 워크숍 논문과 상위권 SCI(E) 저널 논문은 심사 기준이 다르므로, 이번에는 **워크숍 투고를 준비하면서 향후 상위권 저널로 확장할 때도 방법론적 문제가 남지 않도록 하는 것**을 기준으로 삼았습니다.
+
+<card gap={3}>
+  <title size="lg">현재 R1 학술적 완성도 평가</title>
+  <caption>원고 내용에 대한 정성적 전문가 검토 점수이며 실제 게재 확률은 아님</caption>
+  {#each [{n:"연구 주제의 중요성",v:90},{n:"연구 독창성",v:83},{n:"데이터 및 실험 설계",v:85},{n:"통계적 추론의 타당성",v:65},{n:"참조 라벨의 신뢰성·타당성",v:52},{n:"결과 해석의 엄밀성",v:77},{n:"재현 가능성",v:85},{n:"논문 구성 및 전달력",v:84}] as item}
+    <box gap={1}>
+      <row align="center">
+        <text size="sm">{item.n}</text>
+        <spacer/>
+        <text weight="medium" tabularNums={true}>{item.v}/100</text>
+      </row>
+      <box height={7} radius="full" background="#E5E7EB">
+        <box height={7} radius="full" background={item.v<60?"#DC7777":item.v<75?"#D5A252":"#448777"} width={`${item.v}%`}/>
+      </box>
+    </box>
+  {/each}
+  <divider/>
+  <grid columns={2}>
+    <grid-item>
+      <caption>AI-Biz2027 투고 준비도</caption>
+      <title size="2xl">80/100</title>
+      <text size="sm">핵심 보완 후 투고 권장</text>
+    </grid-item>
+    <grid-item>
+      <caption>상위권 SCI(E) 저널 준비도</caption>
+      <title size="2xl">65/100</title>
+      <text size="sm">검증 및 추론 보완 필요</text>
+    </grid-item>
+  </grid>
+</card>
+
+가장 중요한 점은 현재 연구의 약점이 모델의 개수나 데이터의 전체 규모에 있지 않다는 것입니다. **실질적으로 결과를 좌우하는 소수의 표본과 통계적 추론 과정의 신뢰성을 높이는 것이 최우선**입니다.
+
+---
+
+## 2. 우선순위별 핵심 보완사항 15개
+
+예상 소요시간은 기존 코드와 중간 산출물이 정상적으로 보존되어 있다는 전제에서 산정한 실작업 시간입니다.
+
+| 순위 | 핵심 보완사항 | 중요도 | 예상 작업량 | 본문 분량 |
+|---:|---|---|---|---|
+| 1 | 영향력이 큰 표본의 독립적 인간 검증 | 최우선 | 1~3시간 | +3줄 |
+| 2 | DSL 교차적합과 층화표본설계 정합성 검증 | 최우선 | 2~4시간 | +3줄 |
+| 3 | 회귀 추정 불안정성의 직접적인 원인 규명 | 최우선 | 1~2시간 | 기존 문장 교체 |
+| 4 | 가중 학습 × 임계값 조정 2×2 실험 완성 | 최우선 | 30~60분 | 표 1행 추가 |
+| 5 | 희귀사건에 적합한 신뢰구간 검증 | 최우선 | 1~2시간 | +2줄 |
+| 6 | Single-bidding 변수의 구성 타당성 검증 | 매우 높음 | 30~90분 | +2줄 |
+| 7 | HT 기반 H3 재검증 및 해석 강화 | 매우 높음 | 20~40분 | 기존 문장 교체 |
+| 8 | LLM 라벨 변경 및 결측 처리 규칙 명확화 | 매우 높음 | 30~60분 | +2줄 |
+| 9 | 회귀 표본의 선택 편향 진단 | 높음 | 30~60분 | +2줄 |
+| 10 | 인과적·언어적 과잉해석 제거 | 높음 | 20~30분 | 감소 |
+| 11 | 수치 및 표·본문 간 일관성 전수 점검 | 높음 | 20~40분 | 변화 없음 |
+| 12 | DSL 보조 예측기 비교 및 분산 감소 검증 | 높음 | 30~60분 | +2줄 |
+| 13 | 다중검정·가설검정 절차 명확화 | 높음 | 20~40분 | +2줄 |
+| 14 | 모델·데이터·참고문헌 재현성 점검 | 높음 | 30~60분 | 감소 가능 |
+| 15 | 핵심 그림 1~2개 및 LNCS 분량 재구성 | 높음 | 30~60분 | 전체 감소 목표 |
+
+---
+
+## 3. 보완사항별 상세 검토 및 수정 지시
+
+### 1순위. 영향력이 큰 표본에 대한 독립적 인간 검증
+
+<row align="center">
+  <badge color="danger">최우선</badge>
+  <caption>작업량: 낮음~중간 / 학술적 개선 효과: 매우 큼</caption>
+</row>
+
+**현재 문제점**
+
+현재 원고의 가장 큰 취약점입니다. 전체 1,199건을 세 개의 LLM으로 검증하더라도 인간 전문가에 의한 구성 타당성이 확보되지는 않습니다.
+
+특히 stratum D의 양성 표본 4건이 전체 HT 추정 양성 건수의 약 41%를 차지합니다.
+
+<card gap={3}>
+  <title>층별 AI 관련 공고 추정 기여도</title>
+  {#each [{s:"A",v:310,n:172,c:"#7996B8"},{s:"B",v:313,n:183,c:"#7996B8"},{s:"C",v:31,n:5,c:"#7996B8"},{s:"D",v:460,n:4,c:"#D47754"}] as item}
+    <box gap={1}>
+      <row>
+        **Stratum {item.s}**
+        <caption>실제 양성 {item.n}건</caption>
+        <spacer/>
+        <text weight="medium">{item.v}건 ({(item.v/1114*100).toFixed(1)}%)</text>
+      </row>
+      <box background="#E5E7EB" radius="sm" height={22}>
+        <box background={item.c} width={`${item.v/460*100}%`} height={22} radius="sm"/>
+      </box>
+    </box>
+  {/each}
+  <caption>Table 1의 반올림된 모집단 추정 건수를 기준으로 작성</caption>
+</card>
+
+즉, 실제 양성 표본 4건이 모집단 AI 관련 공고 약 460건을 대표합니다.
+
+**최소 리소스 보완 방법**
+
+- Table 2의 C·D 양성 9건 전체를 독립적인 인간 평가자가 검토
+- 가능하면 D층 음성 20~30건을 무작위로 추가 선정하여 검토
+- A·B층에서 양성·음성 10~20건을 추가 검토
+- 기존 LLM의 판정 결과를 보지 않은 상태에서 코드북을 적용
+- 원문에서 AI 관련 판정의 근거가 되는 구절을 기록
+- 명시적 AI 근거가 부족하면 `uncertain`으로 구분
+
+유의할 점은 저자가 직접 검토하면 author audit이며, 독립적인 전문가가 검토해야 expert validation이라고 할 수 있다는 것입니다.
+
+또한 양성 중심으로 선정한 검토 표본만으로 전체 모집단에 대한 LLM 정확도를 추정해서는 안 됩니다.
+
+현재 다음 문장은 반드시 수정해야 합니다.
+
+> this adjudication and the disclosure of all influential cases replace expert validation
+
+LLM 간 재판정이 전문가 검증을 대체한다는 주장은 방어하기 어렵습니다.
+
+**권장 문장**
+
+> These procedures assess label sensitivity but do not substitute for independent expert validation.
+
+**분량 관리:** 본문에는 검증 절차와 핵심 결과만 3줄 정도 추가하고, 개별 판정 근거는 Supplementary S1로 이동합니다.
+
+---
+
+### 2순위. DSL 교차적합과 층화표본설계의 정합성 검증
+
+<row align="center">
+  <badge color="danger">최우선</badge>
+  <caption>작업량: 중간 / 통계적 타당성 핵심</caption>
+</row>
+
+**현재 문제점**
+
+현재 pseudo-outcome 수식은 고정된 보조 예측기에서는 설계기반 불편성을 설명할 수 있습니다.
+
+그러나 실제 구현에서는 다음과 같이 예측 방법이 다릅니다.
+
+- 라벨 표본: 5-fold out-of-fold 예측
+- 비라벨 표본: 전체 라벨로 재학습한 모델의 예측
+- 표본 추출: 층화 비복원 추출
+
+이는 단순히 cross-fitting을 적용했다는 사실만으로 기존 DSL의 이론적 보장이 그대로 성립한다고 단정하기 어렵습니다.
+
+Egami et al.의 DSL은 표본설계를 통제하고 참조 라벨을 이용하여 예측오차를 보정하는 접근입니다. 이론을 현재 연구의 표본 및 학습 구조에 적용하려면 해당 가정이 성립하는지 확인해야 합니다. <Cite refs={["turn180515search18","turn180515search23"]}/>
+
+**최소 리소스 보완 방법**
+
+기존 코드에서 아래 사항을 확인하십시오.
+
+- 층별 표본 수와 교차적합 fold 배정 방식
+- 학습 표본과 평가 표본의 분리
+- 라벨 표본과 비라벨 표본에 적용된 예측기의 차이
+- 교차적합에 사용한 포함확률의 적절성
+- DSL 분산추정 시 층화 비복원 설계의 반영 여부
+
+필요하다면 전체 모집단을 라벨과 무관하게 fold로 구분하고, fold 외부의 라벨만 학습에 사용하여 해당 fold의 모든 공고를 예측하는 방식을 검토하십시오. 이 경우에도 fold별 포함확률과 조건부 표본설계를 함께 정합화해야 합니다.
+
+특히 아래 표현은 현재 상태에서 너무 강합니다.
+
+> consistent and asymptotically normal whatever the accuracy of ĝ
+
+**권장 문장**
+
+> Under appropriate sampling and cross-fitting regularity conditions, DSL permits asymptotically valid inference without requiring a correctly specified auxiliary predictor.
+
+그리고 현재 신뢰구간이 예측기 재학습의 불확실성을 완전히 반영하지 않는다는 점을 명시하십시오.
+
+**분량 관리:** 기존 이론 설명을 교체하고, 상세한 fold 구성과 유도는 Supplementary S2로 이동합니다.
+
+---
+
+### 3순위. DSL 회귀 추정 불안정성의 직접적인 원인 규명
+
+<row align="center">
+  <badge color="danger">최우선</badge>
+  <caption>작업량: 낮음~중간</caption>
+</row>
+
+**현재 문제점**
+
+DSL 회귀 결과는 단순히 신뢰구간이 넓은 수준을 넘어 상당히 불안정합니다.
+
+| 지표 | 현재 결과 |
+|---|---:|
+| 회귀계수 | -124.2%p |
+| Sandwich SE | 1,812%p |
+| Bootstrap CI | -495~429%p |
+| Condition number | 3.05 × 10⁶ |
+| 모의실험 95% CI coverage | 86% |
+
+선형확률모형의 회귀계수가 100%p를 초과한다고 해서 그 자체로 구현 오류인 것은 아닙니다. 그러나 현재 결과는 추정량의 수치적·통계적 안정성을 추가로 점검해야 한다는 강한 신호입니다.
+
+특히 condition number가 두 라벨 시나리오에서 동일하다는 사실만으로 고정효과 블록이 불안정성의 주요 원인이라고 결론 내리기는 어렵습니다.
+
+**최소 리소스 보완 방법**
+
+기존 회귀 행렬을 이용하여 다음의 세 가지를 계산하십시오.
+
+1. 고정효과 블록만의 condition number
+2. 전체 모멘트 행렬의 최소 고윳값과 양의 정부호 여부
+3. AI 관련 변수의 유효 잔차 분산에 해당하는 Schur complement
+
+\[
+S=\hat A_{XX}-
+\hat A_{XW}\hat A_{WW}^{-1}\hat A_{WX}
+\]
+
+\(S\)가 0에 가까워지면 AI 관련성 계수 추정이 극도로 불안정해질 수 있습니다.
+
+추가로 기존 고정효과를 단계적으로 축소한 모형을 사후 진단용으로 비교하십시오.
+
+| 모형 | 통제변수 |
+|---|---|
+| R0 | 절편만 |
+| R1 | 국가 + 분기 |
+| R2 | 국가 + 분기 + CPV |
+| R3 | 기존 전체 통제변수 |
+
+각 모형에서 회귀계수, SE, Schur complement를 비교하면 어느 부분에서 문제가 발생하는지 설명할 수 있습니다.
+
+단, 더 좋은 결과가 나오는 모형으로 사전 지정 모형을 교체해서는 안 됩니다. 진단 목적의 사후 분석으로 유지해야 합니다.
+
+**분량 관리:** 상세 결과는 Supplementary S3에 배치하고 기존 condition number 설명 문단을 교체합니다.
+
+---
+
+### 4순위. 가중 학습 × 임계값 조정 2×2 실험 완성
+
+<row align="center">
+  <badge color="danger">최우선</badge>
+  <caption>작업량: 매우 낮음 / 실험 대비 효과 큼</caption>
+</row>
+
+현재 원고에서 가장 적은 작업으로 실험적 완성도를 높일 수 있는 보완입니다.
+
+**현재 문제점**
+
+가중 학습 때문에 지도학습 모델의 분류 성능이 낮아졌다고 해석하지만, 이를 검증하는 요인 실험이 완성되지 않았습니다.
+
+<card gap={2}>
+  <title>학습 가중치와 분류 임계값의 2×2 비교</title>
+  <table>
+    <table-row>
+      <table-cell/>
+      <table-cell align="center">고정 임계값 0.5</table-cell>
+      <table-cell align="center">Fold 내부 최적화</table-cell>
+    </table-row>
+    <table-row>
+      <table-cell>가중 학습</table-cell>
+      <table-cell align="center">
+        <title size="xl" color="secondary">0.06</title>
+      </table-cell>
+      <table-cell align="center">
+        <box background="#FCE8D5" radius="md" padding={2}>
+          <text color="#97551D" weight="medium">추가 실험 필요</text>
+        </box>
+      </table-cell>
+    </table-row>
+    <table-row>
+      <table-cell>비가중 학습</table-cell>
+      <table-cell align="center">
+        <title size="xl">0.36</title>
+      </table-cell>
+      <table-cell align="center">
+        <title size="xl">0.35</title>
+      </table-cell>
+    </table-row>
+  </table>
+  <caption>수치는 F1. 현재 세 조건은 기존 원고 결과이며 한 조건만 미실험 상태.</caption>
+</card>
+
+**최소 리소스 보완 방법**
+
+가중 학습 모델에 대해 fold 내부 임계값 최적화를 추가하면 됩니다.
+
+임계값은 outer test fold의 정보를 사용하지 않고, 내부 교차검증 또는 별도 training-fold validation에서 설계가중 F1을 기준으로 선택하십시오.
+
+이때 모든 조건에서 동일한 outer fold를 사용해야 공정한 비교가 가능합니다.
+
+추가 실험 결과에 따라 현재의 다음 주장을 수정합니다.
+
+> The gain is therefore attributable to the training weights rather than to the threshold.
+
+현재는 다음 수준이 적절합니다.
+
+> At the fixed threshold of 0.5, removing training weights improved F1; the effect of threshold optimisation under weighted training remains unresolved.
+
+**분량 관리:** Table 3에 결과 한 행을 추가하고, Limitations와 Conclusion의 미완성 ablation 관련 문장을 삭제하면 오히려 분량이 감소할 수 있습니다.
+
+---
+
+### 5순위. 희귀사건에 적합한 신뢰구간 검증
+
+<row align="center">
+  <badge color="danger">최우선</badge>
+  <caption>작업량: 낮음~중간</caption>
+</row>
+
+**현재 문제점**
+
+D층의 양성 건수가 4건에 불과하므로 일반적인 bootstrap percentile interval이 충분한 coverage를 제공하는지 불확실합니다.
+
+D층 양성 표본 하나는 약 115건의 모집단 공고를 대표하므로 단순 표본 규모 1,199건보다 실제 희귀사건 정보량이 훨씬 작습니다.
+
+또한 현재 원고는 다음 두 사실을 동시에 보고합니다.
+
+- Bootstrap에서 모델을 재학습하지 않음
+- 모의실험에서 95% sandwich interval coverage가 86%에 불과함
+
+이는 95% 신뢰구간을 엄밀하게 해석하는 데 제약이 있습니다.
+
+**최소 리소스 보완 방법**
+
+HT 추정량의 층화 비복원 표본추출 분산을 직접 계산하십시오.
+
+\[
+\widehat{\mathrm{Var}}(\hat\theta_{\mathrm{HT}})
+=
+\sum_{h=1}^{H}
+\left(\frac{N_h}{N}\right)^2
+\left(1-\frac{n_h}{N_h}\right)
+\frac{s_h^2}{n_h}
+\]
+
+이후 현재 bootstrap 결과와 비교합니다.
+
+추가로 D층의 양성 건수에 대해 hypergeometric inversion 기반 구간을 검토하십시오. 구현이 어렵다면 층별 exact binomial interval을 이용한 보수적인 동시구간도 민감도 분석으로 활용할 수 있습니다.
+
+DSL 및 회귀 추정에서는 가능하다면 기존 bootstrap 중 일부를 예측기까지 재적합하는 방식으로 수행하여, 고정 예측기 bootstrap과 비교하십시오. 단, 복제 가중치와 fold 구조는 실제 표본설계에 맞아야 합니다.
+
+핵심은 bootstrap 반복 횟수를 2,000회에서 단순히 10,000회로 늘리는 것이 아닙니다. **신뢰구간 생성 방법의 적절성을 검증하는 것**입니다.
+
+**분량 관리:** 구간 비교 결과를 Supplementary S4에 배치하고 본문에는 주요 결론의 유지 여부만 보고합니다.
+
+---
+
+### 6순위. Single-bidding 변수의 구성 타당성 검증
+
+**현재 문제점**
+
+TED의 입찰 건수는 공고 단위가 아니라 lot-result 단위로 기록될 수 있습니다. TED 공식 eForms 문서에서도 Received Submissions Count(BT-759-LotResult)는 lot-result 수준의 변수로 정의됩니다. <Cite refs={["turn180515search2","turn180515search3"]}/>
+
+따라서 입찰 건수 필드가 하나만 존재하는 공고와 실제로 하나의 lot만 존재하는 공고는 구분해야 합니다.
+
+또한 100건을 초과하는 입찰이나 입찰 건수가 0인 경우를 반드시 데이터 오류라고 볼 수는 없습니다.
+
+**최소 리소스 보완 방법**
+
+- 기존 XML 또는 JSON에서 lot 및 lot-result 식별자 확인
+- 입찰 건수가 하나인 공고 중 실제 단일 lot 공고의 비율 산출
+- 단일 lot 공고만 이용한 회귀분석 추가
+- 100건 초과 표본을 포함한 민감도 분석 수행
+- 0건의 제외 근거를 데이터 오류가 아닌 분석 대상의 정의와 연결
+
+단일 lot 여부를 확인하기 어렵다면 결과변수 명칭을 다음과 같이 제한하는 것이 적절합니다.
+
+> Notice-level indicator of a single reported tender count equal to one.
+
+**분량 관리:** 변수 정의를 교체하고 강건성 분석을 Supplementary S5에 추가합니다.
+
+---
+
+### 7순위. HT 기반 H3 재검증 및 해석 강화
+
+**현재 문제점**
+
+현재 논문의 가장 중요한 결과인 H3는 DSL 추정치에 기반합니다. 그러나 DSL은 HT보다 추정 정밀도를 개선하지 못했습니다.
+
+<card gap={3}>
+  <title>AI 관련 공고 비율 추정 비교</title>
+  <svg viewBox="0 0 340 195" width="100%">
+    {#each [0,1,2,3,4] as t}
+      <line x1={100+t*55} x2={100+t*55} y1="10" y2="157" stroke="currentColor" opacity=".12"/>
+      <text x={100+t*55} y="174" fill="currentColor" fontSize="10" textAnchor="middle">{t}%</text>
+    {/each}
+    {#each [{n:"English (M1)",v:.83,y:25},{n:"Multilingual (M2)",v:1.62,y:60},{n:"HT",v:2.06,l:1.38,h:2.94,y:95},{n:"DSL",v:2.32,l:1.57,h:3.21,y:130}] as d}
+      <text x="94" y={d.y+4} textAnchor="end" fontSize="10" fill="currentColor">{d.n}</text>
+      {#if d.l!==undefined}
+        <line x1={100+d.l*55} x2={100+d.h*55} y1={d.y} y2={d.y} stroke="#477CAF" strokeWidth="2"/>
+        <line x1={100+d.l*55} x2={100+d.l*55} y1={d.y-5} y2={d.y+5} stroke="#477CAF"/>
+        <line x1={100+d.h*55} x2={100+d.h*55} y1={d.y-5} y2={d.y+5} stroke="#477CAF"/>
+      {/if}
+      <circle cx={100+d.v*55} cy={d.y} r="4.5" fill={d.l===undefined?"#8C929A":"#477CAF"}/>
+      <text x={108+d.v*55} y={d.y-9} fontSize="10" fill="currentColor">{d.v.toFixed(2)}%</text>
+    {/each}
+    <text x="210" y="191" fontSize="10" fill="currentColor" textAnchor="middle">Estimated prevalence</text>
+  </svg>
+  <caption>현재 R1 수치 기준. HT와 DSL은 95% CI, 사전 고정된 사전 기반 지표는 모집단 내 관측 비율.</caption>
+</card>
+
+HT 추정치만 이용하더라도 영어 사전의 0.83%보다 높은 2.06%가 도출됩니다. 현재 보고된 HT 신뢰구간의 하한도 M1 비율보다 높습니다.
+
+따라서 이 논문의 핵심 결론이 DSL의 복잡한 구현에만 의존할 필요가 없습니다.
+
+**최소 리소스 보완 방법**
+
+- HT−M1 차이와 설계기반 신뢰구간 산출
+- 모든 참조 라벨 시나리오에서 HT 추정치 추가
+- HT와 DSL의 표준오차 및 분산 감소율 비교
+- 기존 H3의 사전 지정 DSL 검정은 유지하되, HT 결과를 사후 강건성 분석으로 제시
+
+**권장 문장**
+
+> The estimated prevalence exceeded the English-dictionary flag rate under both HT and DSL estimation, indicating that this finding was not specific to the auxiliary prediction model.
+
+단, 실제 재검증 결과가 이를 뒷받침할 때 사용해야 합니다.
+
+이 보완을 통해 DSL 회귀분석의 불안정성이 논문 전체의 핵심 기여를 훼손하는 것을 방지할 수 있습니다.
+
+---
+
+### 8순위. LLM 라벨 변경 및 결측 처리 규칙 명확화
+
+**현재 문제점**
+
+현재 라벨 시나리오가 상당히 복잡합니다.
+
+| 라벨 | 정의 | 양성 수 |
+|---|---|---:|
+| Primary | 첫 번째 LLM | 364 |
+| Majority | 세 LLM 기반 부분 재판정 | 359 |
+| Intersection | 두 LLM 모두 양성 | 336 |
+| Union | 두 LLM 중 하나 이상 양성 | 374 |
+
+하지만 두 번째 LLM의 라벨이 없는 33건은 primary label로 대체했으므로 Intersection과 Union이 엄밀한 의미에서 모든 표본에 대한 교집합과 합집합은 아닙니다.
+
+또한 Majority는 세 번째 LLM이 1,199건 전체를 판정한 결과가 아니라 선정된 123건만 재판정한 결과입니다.
+
+**최소 리소스 보완 방법**
+
+- Majority를 `selectively adjudicated reference`로 명명
+- Intersection과 Union에서 secondary label이 없는 경우의 처리 규칙 명시
+- Secondary 결측 33건을 모두 양성 또는 음성으로 가정한 스트레스 테스트
+- Primary 결측 1건의 양성·음성 가정에 따른 HT 및 DSL 추정치 비교
+- 각 라벨 시나리오별 M5 재학습 여부 명시
+
+특히 다음 문장은 논리적으로 정확하지 않습니다.
+
+> hence the unparsed stratum-C notice cannot materially affect the estimates.
+
+관측된 양성 하나를 제외하는 LOO 분석과 실제 결측 라벨의 영향을 분석하는 것은 동일하지 않습니다.
+
+**권장 문장**
+
+> Assigning the unresolved stratum-C label alternatively to zero and one provided a direct sensitivity check for primary-label nonresponse.
+
+실제 분석 수행 후 결과에 맞게 기재하면 됩니다.
+
+---
+
+### 9순위. 회귀 표본의 선택 편향 진단
+
+**현재 문제점**
+
+전체 54,160건 중 회귀분석에 사용되는 공고는 30,388건으로 약 56.1%입니다.
+
+<box gap={2}>
+  <row align="center">
+    <box flex={1}>
+      <caption>전체 분석 프레임</caption>
+      <title size="2xl" tabularNums={true}>54,160</title>
+    </box>
+    <box flex={1}>
+      <caption>회귀분석 표본</caption>
+      <title size="2xl" tabularNums={true}>30,388</title>
+    </box>
+  </row>
+  <row gap={0} height={26} radius="md" clip={true}>
+    <box background="#5485B5" width="56.1%"/>
+    <box background="#A4AAB3" width="43.9%"/>
+  </row>
+  <row>
+    <caption>포함 56.1%</caption>
+    <spacer/>
+    <caption>제외 43.9%</caption>
+  </row>
+</box>
+
+표본설계에 따른 가중치는 라벨링 표본의 추출 편향을 보정하는 것이지, 입찰 건수 결측이나 회귀 표본 선정으로 인한 선택 편향까지 자동으로 보정하지는 않습니다.
+
+**최소 리소스 보완 방법**
+
+기존 데이터를 이용하여 회귀 포함 여부에 따른 다음 항목을 비교하십시오.
+
+- 국가 및 언어
+- CPV 및 조달 절차 유형
+- M1·M2 양성 비율
+- M5 예측확률
+- 설계가중 참조 라벨 양성 비율
+
+가능하면 standardized mean difference를 이용하여 표본 간 차이를 보고하십시오.
+
+별도의 복잡한 결측 보정 모형은 이번 워크숍 논문에서는 필수적이지 않습니다. 대신 회귀분석의 추정 대상이 전체 TED 프레임이 아니라 유효한 입찰 건수가 관측된 부분 모집단임을 명확하게 제한해야 합니다.
+
+**권장 문장**
+
+> The regression estimand pertains to notices with eligible reported tender counts rather than to the entire analysis frame.
+
+**분량 관리:** 비교표는 Supplementary S6으로 이동합니다.
+
+---
+
+### 10순위. 인과적·언어적 과잉해석 제거
+
+**현재 문제점**
+
+R1은 대부분의 주장 수준을 적절히 조절하고 있지만, Discussion과 Conclusion에 여전히 실험 결과가 직접 뒷받침하지 않는 해석이 존재합니다.
+
+| 현재 표현 또는 주장 | 학술적으로 적절한 수정 방향 |
+|---|---|
+| most of the gain came from handling language | M2의 개선은 다국어 확장 및 용어 구성 변경의 결합 효과 |
+| weighting choices … can be harmful for training | 특정 가중 학습 설정에서 고정 임계값 F1이 낮아짐 |
+| a linear classifier … learned little beyond the dictionary signal | 시험한 분류기가 사전 기반 방법을 능가하지 못함 |
+| H1 … was masked by uncertainty | H1 추정치는 참조 라벨에 민감하고 불확실함 |
+| ill-conditioning stems mainly from the sparse fixed-effect block | 고정효과 블록이 원인일 가능성이 있으나 추가 진단 필요 |
+| captures roughly one third | estimated prevalence 대비 flag rate가 약 3분의 1 |
+
+마지막 항목은 특히 중요합니다.
+
+M1이 모집단 AI 관련 공고 비율의 약 3분의 1에 해당하는 수의 공고를 표시했다는 것과 실제 AI 관련 공고의 3분의 1을 찾아냈다는 것은 다릅니다.
+
+M1의 관측된 recall은 0.28이며 precision은 0.69입니다. False positive도 존재하므로 단순 비율의 차이를 탐지율로 해석해서는 안 됩니다.
+
+**권장 문장**
+
+> The English dictionary flagged notices at approximately one third of the DSL-estimated prevalence.
+
+이 수정은 Abstract, Results, Discussion, Conclusion에 일관되게 적용해야 합니다.
+
+**분량 관리:** 문장 교체만으로 해결할 수 있으며 오히려 분량이 감소합니다.
+
+---
+
+### 11순위. 수치 및 표·본문 간 일관성 전수 점검
+
+**현재 문제점**
+
+제공된 R1을 기준으로 실제 수치 및 서술을 검토한 결과, 몇 가지 수정하거나 확인해야 하는 항목이 발견됩니다.
+
+| 검토 항목 | 확인 결과 및 수정사항 |
+|---|---|
+| HT 양성 추정치 | Table 1의 반올림 합계 1,114건과 2.06%는 일치 |
+| 회귀 표본 수 | 31,661−1,271−2 = 30,388로 일치 |
+| D층 포함확률 | 정확히 450/51,756 사용 필요. 표의 0.009는 표시용 |
+| D층 표본 가중치 | 약 115.01로 본문과 일치 |
+| 라벨 비율 | 364/1,199의 비가중 양성 비율과 모집단 추정 비율 구분 필요 |
+| M4 학습 방식 | 임계값을 라벨로 조정하면서 `requires no labels`라고 서술 |
+| 언어 수 | TED 전체 24개 언어와 분석 프레임 23개 언어 구분 |
+| H3 Union 결과 | 반올림 전 차이 확인 필요: 표시값 2.36−0.83은 1.53%p |
+| LOO 분석 | 표본 제거인지 양성 라벨을 음성으로 변경한 것인지 확인 필요 |
+| H4 판단 | `could not be assessed`보다 `was not supported; estimates were inconclusive`가 명확 |
+| DSL 분산 설명 | prevalence와 regression에 대한 분산 추정 방법을 명시적으로 구분 |
+| 문장 오류 | `one-sided bootstrap p-values`의 문장 시작 대문자 수정 |
+
+특히 M4는 다음과 같이 수정해야 합니다.
+
+> M3 is label-free, whereas M4 uses a label-free similarity score with a threshold selected within training folds.
+
+추가로 **회귀 표본의 단일입찰 비율 46.2%**는 제공된 집계만으로 검산할 수 없으므로 원본 데이터와 대조해야 합니다.
+
+**최소 리소스 보완 방법**
+
+표를 LaTeX에 직접 입력하는 대신 기존 분석 코드에서 자동 생성하고, 원본 결과 파일에 대해 assertion을 적용하십시오.
+
+- 표본 수 합계
+- 층별 양성 수 합계
+- 가중치 합계
+- Precision·Recall·F1 일관성
+- 회귀계수 및 신뢰구간 단위 변환
+
+**분량 관리:** 본문 추가 없음.
+
+---
+
+### 12순위. DSL 보조 예측기 비교 및 분산 감소 검증
+
+**현재 문제점**
+
+M5의 분류 성능이 낮다는 사실만으로 DSL 보조 예측기로서 부적절하다고 판단할 수는 없습니다.
+
+DSL의 핵심은 분류 임계값에서의 F1보다 모집단의 추론 대상과 관련된 예측잔차를 얼마나 줄이는가에 있기 때문입니다.
+
+M5는 F1이 0.06이지만 사전 지정 모델 중 AUPRC는 0.33으로 가장 높았습니다.
+
+반면 M5u는 F1을 개선했음에도 DSL prevalence 추정치는 1.31%로 낮아지고 신뢰구간은 더 넓어졌습니다.
+
+**최소 리소스 보완 방법**
+
+새로운 모델을 추가로 학습하기보다는 기존 예측확률을 재사용하여 비교하십시오.
+
+| 보조 예측기 | 비교 목적 |
+|---|---|
+| 상수 0 | HT 기준선 |
+| M1·M2 | 층 내부 상수 예측기 |
+| M4 연속 유사도 또는 보정 점수 | 비지도 점수 활용 |
+| M5 확률 | 기존 DSL |
+| M6 확률 | 고전적 텍스트 분류기 |
+| M5u 확률 | 비가중 학습 효과 |
+
+각 조건에 대해 다음 지표를 계산합니다.
+
+- DSL prevalence
+- SE 및 95% CI
+- 층별 예측잔차 분산
+- HT 대비 분산 감소율
+- 설계가중 Brier score
+
+특히 D층의 잔차 분산을 보고하면 왜 DSL이 HT보다 정밀도를 개선하지 못했는지 직접 설명할 수 있습니다.
+
+단, 가장 낮은 SE를 가진 모델을 사후 선택하여 confirmatory estimator로 교체하지 말아야 합니다.
+
+**분량 관리:** 결과표는 Supplementary S7에 두고 Discussion에서 핵심 결과만 서술합니다.
+
+---
+
+### 13순위. 다중검정 및 가설검정 절차 명확화
+
+**현재 문제점**
+
+현재 H1–H3에 Holm 보정을 적용했다고 설명하지만, H2가 두 개의 하위 가설로 구성되므로 실제 검정 개수와 검정군을 정확하게 명시해야 합니다.
+
+| 가설 | 검정 방향 | 현재 결과 |
+|---|---|---|
+| H1 | 단측 | 지지되지 않음 |
+| H2a | 단측 | 지지되지 않음 |
+| H2b | 단측 | 지지되지 않음 |
+| H3 | 단측 | 지지됨 |
+| H4 | 양측 | 불확실 |
+
+**최소 리소스 보완 방법**
+
+- Holm 보정에 포함되는 검정이 H1, H2a, H2b, H3의 총 4개인지 확인
+- H4를 별도 검정군으로 둔 사전 계획상 근거 명시
+- Bootstrap p-value의 계산식과 귀무가설 중심화 여부 확인
+- 보고한 95% CI가 개별 구간인지 다중검정 보정 구간인지 명시
+- 사후 분석에는 확증적 유의성 표현을 사용하지 않음
+
+또한 M2가 가장 높은 관측 F1을 보였다는 것과 다른 모든 방법보다 통계적으로 우수하다는 것은 구분해야 합니다.
+
+M2와 M1의 paired F1 difference에 대한 설계기반 bootstrap CI를 추가하면 다국어 사전의 실질적인 개선 효과를 더욱 명확하게 설명할 수 있습니다.
+
+**분량 관리:** 검정 방법 한두 문장을 수정하고 상세 검정표를 Supplementary S8로 이동합니다.
+
+---
+
+### 14순위. 모델·데이터·참고문헌 재현성 점검
+
+**현재 문제점**
+
+재현성을 위한 정보는 충분히 많이 작성되어 있지만, 실제로 동일한 실험을 다시 실행할 수 있는 수준까지 정교화할 필요가 있습니다.
+
+Claude Haiku 5.5의 모델명은 OpenRouter에서 확인됩니다. 다만 API 별칭과 날짜가 포함된 고정 버전 식별자가 구분되어 있으므로 실제 사용한 모델 ID를 로그와 대조해야 합니다. <Cite refs={["turn650693search3","turn650693search4"]}/>
+
+| 구분 | 추가 확인 항목 |
+|---|---|
+| LLM | 실제 API model ID, provider, generation parameters |
+| Hugging Face | 모델 repository ID 및 revision hash |
+| Logistic regression | C, solver, max_iter, 가중치 정규화 여부 |
+| 교차검증 | fold ID, seed, stratification 기준 |
+| Dictionary | 전체 패턴, 정규식, 단어 경계 및 Unicode 처리 |
+| TED | 실제 검색 쿼리, 검색일, 필드명, pagination |
+| 표본 추출 | 모집단 프레임 해시, 표본 ID 및 seed |
+| 사전 분석계획 | 기존 commit과 amendment의 변경 내역 |
+| 참고문헌 | DOI, 저자명, 출판연도, 제목, 출판처 |
+| 연구비용 | API 요청 수, 모델별 비용 및 재시도 수 |
+
+추가로 다음 두 사항을 확인할 필요가 있습니다.
+
+**첫째, 인용의 직접적인 적합성입니다.** AI 노출이나 채용공고 연구가 공공조달에서 영어 사전을 일반적으로 사용한다는 주장까지 직접 뒷받침하는 것은 아닙니다. 직접적인 공공조달 연구 또는 실제 AI 조달 추적기의 방법론 자료를 1~2개 보강하거나 주장의 범위를 좁히는 것이 좋습니다.
+
+**둘째, 데이터 제공 방식입니다.** 원문을 배포하지 않는다면 공고 ID로 동일한 원문을 복원할 수 있는 데이터 수집 스크립트와 전처리 방법을 제공해야 합니다.
+
+현재 GitHub 저장소의 실제 코드 실행 결과까지 검증한 것은 아니므로 재현성에 관한 최종 판단은 해당 저장소를 점검한 이후 가능합니다.
+
+**분량 관리:** 상세 환경 정보를 `REPRODUCIBILITY.md`와 Supplementary S9로 이동하고, 본문에는 필수 실험 설정만 남깁니다.
+
+---
+
+### 15순위. 핵심 그림 1~2개 추가 및 LNCS 분량 재구성
+
+현재 연구는 분석 내용이 풍부하지만 표 5개와 긴 결과 서술 때문에 핵심 기여가 분산되어 있습니다.
+
+그림은 단순히 시각적 완성도를 높이는 용도가 아니라, **기존 표 또는 문단을 대체하면서 심사자가 핵심 결과를 빠르게 파악할 수 있도록** 구성하는 것이 좋습니다.
+
+#### 권장 Figure 1. 분류 성능 비교
+
+<card gap={2}>
+  <title>Design-weighted F1 across measurement methods</title>
+  <svg viewBox="0 0 350 267" width="100%">
+    {#each [0,.2,.4,.6,.8,1] as t}
+      <line x1={95+t*237} x2={95+t*237} y1="12" y2="224" stroke="currentColor" opacity=".12"/>
+      <text x={95+t*237} y="240" fontSize="10" fill="currentColor" textAnchor="middle">{t.toFixed(1)}</text>
+    {/each}
+    {#each [{n:"M2 Multilingual",v:.63,l:.50,h:.78},{n:"M1 English",v:.40,l:.30,h:.53},{n:"M5u (post hoc)",v:.35,l:.25,h:.50},{n:"M3 NLI",v:.20,l:.14,h:.31},{n:"M4 Prototype",v:.13,l:.08,h:.23},{n:"M6 TF-IDF",v:.10,l:.06,h:.16},{n:"M5 Embedding",v:.06,l:.03,h:.11}] as d,i}
+      <text x="88" y={27+i*30} textAnchor="end" fontSize="10" fill="currentColor">{d.n}</text>
+      <line x1={95+d.l*237} x2={95+d.h*237} y1={23+i*30} y2={23+i*30} stroke={i===0?"#247B65":"#6F8295"} strokeWidth="2"/>
+      <line x1={95+d.l*237} x2={95+d.l*237} y1={19+i*30} y2={27+i*30} stroke="#6F8295"/>
+      <line x1={95+d.h*237} x2={95+d.h*237} y1={19+i*30} y2={27+i*30} stroke="#6F8295"/>
+      <circle cx={95+d.v*237} cy={23+i*30} r="4.5" fill={i===0?"#247B65":"#6F8295"}/>
+      <text x={103+d.h*237} y={27+i*30} fontSize="10" fill="currentColor">{d.v.toFixed(2)}</text>
+    {/each}
+    <text x="214" y="259" fontSize="10" fill="currentColor" textAnchor="middle">F1 score</text>
+  </svg>
+  <caption>현재 R1 결과를 이용한 그림 구성 예시. 점은 추정치, 선은 95% CI.</caption>
+</card>
+
+Table 3을 축소하거나 대체할 수 있습니다. 다만 Precision, Recall, AUPRC와 언어별 Recall은 핵심 근거이므로 본문 축소표 또는 Supplementary에서 보존해야 합니다.
+
+#### 권장 Figure 2. 참조 라벨에 따른 추정 비율의 민감도
+
+<card gap={2}>
+  <title>Estimated prevalence across reference definitions</title>
+  <svg viewBox="0 0 350 213" width="100%">
+    {#each [0,1,2,3,4] as t}
+      <line x1={92+t*60} x2={92+t*60} y1="25" y2="170" stroke="currentColor" opacity=".12"/>
+      <text x={92+t*60} y="185" fontSize="10" fill="currentColor" textAnchor="middle">{t}%</text>
+    {/each}
+    <line x1={92+.83*60} x2={92+.83*60} y1="21" y2="170" stroke="#AA7750" strokeDasharray="4 3" strokeWidth="1.5"/>
+    <text x={92+.83*60} y="12" fontSize="10" fill="#AA7750" textAnchor="middle">M1: 0.83%</text>
+    {#each [{n:"Primary",v:2.32,l:1.57,h:3.21},{n:"Majority",v:1.84,l:1.21,h:2.66},{n:"Intersection",v:1.40,l:1.09,h:1.91},{n:"Union",v:2.36,l:1.61,h:3.26}] as d,i}
+      <text x="85" y={48+i*36} fill="currentColor" fontSize="11" textAnchor="end">{d.n}</text>
+      <line x1={92+d.l*60} x2={92+d.h*60} y1={44+i*36} y2={44+i*36} stroke="#487CA5" strokeWidth="2"/>
+      <line x1={92+d.l*60} x2={92+d.l*60} y1={39+i*36} y2={49+i*36} stroke="#487CA5"/>
+      <line x1={92+d.h*60} x2={92+d.h*60} y1={39+i*36} y2={49+i*36} stroke="#487CA5"/>
+      <circle cx={92+d.v*60} cy={44+i*36} r="5" fill="#487CA5"/>
+      <text x={92+d.v*60} y={34+i*36} fontSize="10" fill="currentColor" textAnchor="middle">{d.v.toFixed(2)}%</text>
+    {/each}
+    <text x="212" y="205" fontSize="10" fill="currentColor" textAnchor="middle">DSL-estimated prevalence</text>
+  </svg>
+  <caption>참조 라벨에 따라 추정 크기는 달라지지만 현재 보고된 모든 구간은 M1 관측 비율보다 높음.</caption>
+</card>
+
+두 그림 중 하나만 선택한다면 **Figure 2를 우선 추천합니다.** 분류 모델의 단순 성능 비교보다 측정오차와 통계적 추론의 민감도가 이 연구의 차별화된 학술적 기여이기 때문입니다.
+
+추가 분석 완료 후 최종 수치로 그림을 갱신해야 합니다.
+
+---
+
+## 4. 14쪽 이내 분량 관리 전략
+
+현재 14쪽인 R1에서 추가 실험과 그림을 모두 수용하려면 기존 서술을 약 1.5~2쪽 줄이는 방향이 필요합니다.
+
+### 본문 권장 페이지 배분
+
+<card gap={2}>
+  {#each [{n:"Title / Abstract / Keywords",v:.7},{n:"Introduction",v:1.3},{n:"Related Work",v:.8},{n:"Method",v:2.7},{n:"Experimental Setup",v:1.5},{n:"Results (그림 포함)",v:3.3},{n:"Discussion / Limitations",v:1.4},{n:"Conclusion / Declarations",v:.5},{n:"References",v:1.8}] as d}
+    <row align="center">
+      <box width="43%">
+        <text size="sm">{d.n}</text>
+      </box>
+      <box flex={1} background="#E5E7EB" height={12} radius="sm">
+        <box height={12} radius="sm" background="#6487AA" width={`${d.v/3.3*100}%`}/>
+      </box>
+      <text size="sm" tabularNums={true} width="34px" textAlign="end">{d.v.toFixed(1)}p</text>
+    </row>
+  {/each}
+  <divider/>
+  <row>
+    **합계**
+    <spacer/>
+    <title size="xl">14.0쪽</title>
+  </row>
+  <caption>실제 LaTeX 컴파일 전 목표 배분이며 표와 그림 배치에 따라 달라질 수 있음.</caption>
+</card>
+
+### 기존 본문에서 줄일 부분
+
+| 항목 | 조정 방향 | 예상 절감 |
+|---|---|---:|
+| Introduction | 연구 필요성과 기여의 중복 제거 | 0.2쪽 |
+| Related Work | 세 주제의 핵심 문헌만 유지 | 0.3쪽 |
+| Method | 학습 설정과 상세 수식 유도를 외부 자료로 이동 | 0.3쪽 |
+| Table 2 | D층 핵심 사례는 유지, 전체 사례는 외부 자료로 이동 | 0.3쪽 |
+| Table 4 | 핵심 회귀 결과만 유지하고 보조 모형 이동 | 0.3쪽 |
+| Robustness | 반복 서술을 민감도 그림과 통합 | 0.3쪽 |
+| Discussion·Limitations | Results와 반복되는 수치 및 서술 제거 | 0.3쪽 |
+| **전체** | | **약 2.0쪽** |
+
+참고문헌은 Springer LNCS 공식 템플릿과 `splncs04` 스타일 적용 여부를 확인하십시오. Springer는 학회 논문집용 공식 템플릿과 저자 지침을 제공합니다. <Cite refs={["turn650693search12","turn650693search18"]}/>
+
+폰트 크기나 행간, 페이지 여백을 강제로 줄이는 방식은 권장하지 않습니다.
+
+---
+
+## 5. Supplementary Material 권장 구성
+
+별도의 보충자료 제출이 허용되지 않는다면 GitHub 저장소의 버전 고정된 기술 부록으로 제공할 수 있습니다. 단, 심사자가 논문의 핵심 타당성을 판단하는 데 필요한 정보는 반드시 본문에도 남겨야 합니다.
+
+| 구분 | 제목 | 포함 내용 |
+|---|---|---|
+| S1 | Reference Annotation and Validation | 코드북, 인간 검토, 개별 판정 근거 |
+| S2 | Sampling and Cross-Fitting | 표본설계, fold 구성, DSL 가정 |
+| S3 | Regression Diagnostics | Schur complement, 고윳값, 축소 모형 |
+| S4 | Uncertainty Quantification | 희귀사건 CI, FPC, bootstrap, 모의실험 |
+| S5 | Outcome Construction | TED 필드 정의, 단일 lot 분석 |
+| S6 | Regression Sample Selection | 포함·제외 표본 비교 |
+| S7 | Auxiliary Predictor Analysis | 2×2 ablation, 예측기별 DSL 결과 |
+| S8 | Hypothesis Testing | 개별 p-value, Holm 보정, paired differences |
+| S9 | Reproducibility | 모델 ID, 하이퍼파라미터, 검색 쿼리, 실행환경 |
+
+본문의 Appendix도 공식 페이지 제한에 포함될 수 있으므로 페이지 제한 밖에 둘 수 있다고 가정해서는 안 됩니다.
+
+---
+
+## 6. 상위권 저널을 고려한 연구 기여 재정립
+
+현재 연구를 상위권 저널로 발전시키려면 연구 기여의 우선순위를 아래처럼 재정립하는 것이 좋습니다.
+
+<box border radius="lg" padding={3} gap={3}>
+  <box gap={1}>
+    <caption>Contribution 1 — Measurement</caption>
+    **다국어 텍스트 기반 AI 관련성 측정의 오차 정량화**
+
+    <text size="sm">영어 사전과 다국어 사전 및 지도학습 모델의 성능을 확률표본으로 평가</text>
+  </box>
+  <divider/>
+  <box gap={1}>
+    <caption>Contribution 2 — Population inference</caption>
+    **참조 라벨 및 보조 예측기 불확실성이 모집단 추정에 미치는 영향 규명**
+
+    <text size="sm">HT와 DSL의 비교, 희귀사건, 영향력이 큰 표본의 민감도 분석</text>
+  </box>
+  <divider/>
+  <box gap={1}>
+    <caption>Contribution 3 — Downstream inference</caption>
+    **텍스트 기반 측정변수를 활용한 후속 회귀분석의 한계 규명**
+
+    <text size="sm">단순 plug-in 회귀와 설계기반 보정 회귀의 차이 및 불안정성 진단</text>
+  </box>
+</box>
+
+새로운 AI 분류 알고리즘을 제안하지 않는다는 점은 이 연구의 결정적인 약점이 아닙니다. 오히려 기존 모델의 예측 정확도와 통계적 추론의 타당성이 반드시 일치하지 않는다는 사실을 보여주는 데 연구의 의미가 있습니다.
+
+다만 이를 입증하려면 DSL의 이론적 적용 조건과 참조 라벨의 타당성 문제가 해결되어야 합니다.
+
+### 권장 핵심 연구 메시지
+
+> Accurate population-level inference from multilingual procurement texts requires not only effective screening methods but also explicit treatment of reference-label uncertainty, rare-event sampling, and downstream measurement error.
+
+현재 제목은 이러한 연구 방향과 잘 맞으므로 굳이 변경하지 않아도 됩니다.
+
+**권장 제목 유지:**
+
+Measuring AI-Relatedness in Multilingual Public Procurement Notices: Dictionary-Based Screening, Embedding Classifiers, and Design-Based Inference
+
+---
+
+## 7. 실제 수정 작업 체크리스트
+
+기존 분석 코드와 데이터를 활용하여 R2를 만들 때 아래 체크리스트를 작업 기준으로 활용하는 것을 추천합니다.
+
+{@body const tasks=[["1. 영향력이 큰 표본의 인간 검증","최우선"],["2. DSL cross-fitting 및 포함확률 검증","최우선"],["3. Schur complement 및 회귀 안정성 진단","최우선"],["4. 가중 학습 × 임계값 2×2 실험","최우선"],["5. 희귀사건 신뢰구간 및 분산추정 검증","최우선"],["6. 단일 lot 및 입찰 건수 변수 검증","필수"],["7. HT 기반 H3 강건성 검증","필수"],["8. 참조 라벨 및 결측 민감도 분석","필수"],["9. 회귀 표본 선택 편향 비교","권장"],["10. 과잉해석 문장 전수 수정","필수"],["11. 수치·표·본문 자동 대조","필수"],["12. 기존 보조 예측기 DSL 비교","권장"],["13. Holm 보정 및 paired F1 검정","필수"],["14. 모델 ID 및 재현성 자료 검증","필수"],["15. 그림 제작 및 14쪽 이내 컴파일","필수"]]}
+{@body const [done,setDone]=DIL.useState(tasks.map(()=>false))}
+<card gap={3}>
+  <row align="center">
+    <title>R2 수정 진행률</title>
+    <spacer/>
+    <title size="lg" tabularNums={true}>{done.filter(Boolean).length}/15</title>
+  </row>
+  <box background="#E5E7EB" height={8} radius="full">
+    <box background="#448777" height={8} radius="full" width={`${done.filter(Boolean).length/15*100}%`}/>
+  </box>
+  {#each tasks as task,i}
+    <row align="center">
+      <checkbox checked={done[i]} onChange={v=>setDone(old=>old.map((x,j)=>i===j?v:x))} lineThrough={done[i]}>
+        <text size="sm">{task[0]}</text>
+      </checkbox>
+      <spacer/>
+      <caption>{task[1]}</caption>
+    </row>
+  {/each}
+  <divider/>
+  <button block={true} variant="outline" onClick={()=>GenUI.copy(tasks.map((t,i)=>(done[i]?"[x] ":"[ ] ")+t[0]+" ("+t[1]+")").join("\n"))}><icon name="copy" size="sm"/> 체크리스트 복사</button>
+</card>
+
+---
+
+## 8. 최종 판단
+
+| 평가 항목 | R1 | 15개 보완 후 기대 수준 |
+|---|---:|---:|
+| 연구 독창성 | 83 | 86 |
+| 실험 설계 | 85 | 92 |
+| 통계적 엄밀성 | 65 | 85 |
+| 참조 라벨 타당성 | 52 | 75 |
+| 결과 해석 | 77 | 93 |
+| 재현 가능성 | 85 | 95 |
+| 논문 전달력 | 84 | 92 |
+| **AI-Biz2027 투고 준비도** | **80** | **91** |
+| **상위권 SCI(E) 저널 준비도** | **65** | **80** |
+
+*보완 후 점수는 추가 검증에서 중대한 오류가 발견되지 않는다는 조건의 정성적 예상 평가이며, 실제 채택 확률이 아닙니다.*
+
+### 이번 수정에서 굳이 하지 않아도 되는 작업
+
+- 54,160건 전체에 대한 LLM 라벨링
+- 새로운 대형 임베딩 모델의 대규모 비교
+- LLM 파인튜닝
+- 새로운 국가별 조달 데이터 수집
+- 대규모 하이퍼파라미터 탐색
+- GPU 기반 전체 NLI 추론
+- 연구가설 또는 연구 목적의 전면 변경
+
+이러한 작업은 향후 저널 확장 연구에서 진행하는 편이 효율적입니다.
+
+다만 독립적 인간 검증이 극소수에 그치는 경우 상위권 저널에서는 여전히 전체 참조 라벨의 타당성을 문제 삼을 수 있습니다. 장기적으로는 D층의 추가 확률표본과 독립적인 인간 참조 라벨 확보가 필요합니다.
+
+이번 검토는 제공된 R1 원고와 관련 공식 자료 및 선행연구를 기준으로 수행했으며, 실제 분석 코드 실행, 개별 TED 원문 검증, 전체 참고문헌 DOI 대조, LaTeX 페이지 컴파일까지 수행한 것은 아닙니다.
+
+**결론적으로 R2에서는 실험의 양보다 검증의 질을 높여야 합니다.** 특히 1~8순위 보완에 집중하면 기존 연구 구조와 14쪽 분량을 유지하면서도 심사자가 제기할 가능성이 높은 방법론적 문제를 상당 부분 해소할 수 있습니다.
+---
+
+### 6순위. Single-bidding 변수의 구성 타당성 검증
+
+**현재 문제점**
+
+TED의 입찰 건수는 공고 단위가 아니라 lot-result 단위로 기록될 수 있습니다. TED 공식 eForms 문서에서도 Received Submissions Count(BT-759-LotResult)는 lot-result 수준의 변수로 정의됩니다. <Cite refs={["turn180515search2","turn180515search3"]}/>
+
+따라서 입찰 건수 필드가 하나만 존재하는 공고와 실제로 하나의 lot만 존재하는 공고는 구분해야 합니다.
+
+또한 100건을 초과하는 입찰이나 입찰 건수가 0인 경우를 반드시 데이터 오류라고 볼 수는 없습니다.
+
+**최소 리소스 보완 방법**
+
+- 기존 XML 또는 JSON에서 lot 및 lot-result 식별자 확인
+- 입찰 건수가 하나인 공고 중 실제 단일 lot 공고의 비율 산출
+- 단일 lot 공고만 이용한 회귀분석 추가
+- 100건 초과 표본을 포함한 민감도 분석 수행
+- 0건의 제외 근거를 데이터 오류가 아닌 분석 대상의 정의와 연결
+
+단일 lot 여부를 확인하기 어렵다면 결과변수 명칭을 다음과 같이 제한하는 것이 적절합니다.
+
+> Notice-level indicator of a single reported tender count equal to one.
+
+**분량 관리:** 변수 정의를 교체하고 강건성 분석을 Supplementary S5에 추가합니다.
+
+---
+
+### 7순위. HT 기반 H3 재검증 및 해석 강화
+
+**현재 문제점**
+
+현재 논문의 가장 중요한 결과인 H3는 DSL 추정치에 기반합니다. 그러나 DSL은 HT보다 추정 정밀도를 개선하지 못했습니다.
+
+<card gap={3}>
+  <title>AI 관련 공고 비율 추정 비교</title>
+  <svg viewBox="0 0 340 195" width="100%">
+    {#each [0,1,2,3,4] as t}
+      <line x1={100+t*55} x2={100+t*55} y1="10" y2="157" stroke="currentColor" opacity=".12"/>
+      <text x={100+t*55} y="174" fill="currentColor" fontSize="10" textAnchor="middle">{t}%</text>
+    {/each}
+    {#each [{n:"English (M1)",v:.83,y:25},{n:"Multilingual (M2)",v:1.62,y:60},{n:"HT",v:2.06,l:1.38,h:2.94,y:95},{n:"DSL",v:2.32,l:1.57,h:3.21,y:130}] as d}
+      <text x="94" y={d.y+4} textAnchor="end" fontSize="10" fill="currentColor">{d.n}</text>
+      {#if d.l!==undefined}
+        <line x1={100+d.l*55} x2={100+d.h*55} y1={d.y} y2={d.y} stroke="#477CAF" strokeWidth="2"/>
+        <line x1={100+d.l*55} x2={100+d.l*55} y1={d.y-5} y2={d.y+5} stroke="#477CAF"/>
+        <line x1={100+d.h*55} x2={100+d.h*55} y1={d.y-5} y2={d.y+5} stroke="#477CAF"/>
+      {/if}
+      <circle cx={100+d.v*55} cy={d.y} r="4.5" fill={d.l===undefined?"#8C929A":"#477CAF"}/>
+      <text x={108+d.v*55} y={d.y-9} fontSize="10" fill="currentColor">{d.v.toFixed(2)}%</text>
+    {/each}
+    <text x="210" y="191" fontSize="10" fill="currentColor" textAnchor="middle">Estimated prevalence</text>
+  </svg>
+  <caption>현재 R1 수치 기준. HT와 DSL은 95% CI, 사전 고정된 사전 기반 지표는 모집단 내 관측 비율.</caption>
+</card>
+
+HT 추정치만 이용하더라도 영어 사전의 0.83%보다 높은 2.06%가 도출됩니다. 현재 보고된 HT 신뢰구간의 하한도 M1 비율보다 높습니다.
+
+따라서 이 논문의 핵심 결론이 DSL의 복잡한 구현에만 의존할 필요가 없습니다.
+
+**최소 리소스 보완 방법**
+
+- HT−M1 차이와 설계기반 신뢰구간 산출
+- 모든 참조 라벨 시나리오에서 HT 추정치 추가
+- HT와 DSL의 표준오차 및 분산 감소율 비교
+- 기존 H3의 사전 지정 DSL 검정은 유지하되, HT 결과를 사후 강건성 분석으로 제시
+
+**권장 문장**
+
+> The estimated prevalence exceeded the English-dictionary flag rate under both HT and DSL estimation, indicating that this finding was not specific to the auxiliary prediction model.
+
+단, 실제 재검증 결과가 이를 뒷받침할 때 사용해야 합니다.
+
+이 보완을 통해 DSL 회귀분석의 불안정성이 논문 전체의 핵심 기여를 훼손하는 것을 방지할 수 있습니다.
+
+---
+
+### 8순위. LLM 라벨 변경 및 결측 처리 규칙 명확화
+
+**현재 문제점**
+
+현재 라벨 시나리오가 상당히 복잡합니다.
+
+| 라벨 | 정의 | 양성 수 |
+|---|---|---:|
+| Primary | 첫 번째 LLM | 364 |
+| Majority | 세 LLM 기반 부분 재판정 | 359 |
+| Intersection | 두 LLM 모두 양성 | 336 |
+| Union | 두 LLM 중 하나 이상 양성 | 374 |
+
+하지만 두 번째 LLM의 라벨이 없는 33건은 primary label로 대체했으므로 Intersection과 Union이 엄밀한 의미에서 모든 표본에 대한 교집합과 합집합은 아닙니다.
+
+또한 Majority는 세 번째 LLM이 1,199건 전체를 판정한 결과가 아니라 선정된 123건만 재판정한 결과입니다.
+
+**최소 리소스 보완 방법**
+
+- Majority를 `selectively adjudicated reference`로 명명
+- Intersection과 Union에서 secondary label이 없는 경우의 처리 규칙 명시
+- Secondary 결측 33건을 모두 양성 또는 음성으로 가정한 스트레스 테스트
+- Primary 결측 1건의 양성·음성 가정에 따른 HT 및 DSL 추정치 비교
+- 각 라벨 시나리오별 M5 재학습 여부 명시
+
+특히 다음 문장은 논리적으로 정확하지 않습니다.
+
+> hence the unparsed stratum-C notice cannot materially affect the estimates.
+
+관측된 양성 하나를 제외하는 LOO 분석과 실제 결측 라벨의 영향을 분석하는 것은 동일하지 않습니다.
+
+**권장 문장**
+
+> Assigning the unresolved stratum-C label alternatively to zero and one provided a direct sensitivity check for primary-label nonresponse.
+
+실제 분석 수행 후 결과에 맞게 기재하면 됩니다.
+
+---
+
+### 9순위. 회귀 표본의 선택 편향 진단
+
+**현재 문제점**
+
+전체 54,160건 중 회귀분석에 사용되는 공고는 30,388건으로 약 56.1%입니다.
+
+<box gap={2}>
+  <row align="center">
+    <box flex={1}>
+      <caption>전체 분석 프레임</caption>
+      <title size="2xl" tabularNums={true}>54,160</title>
+    </box>
+    <box flex={1}>
+      <caption>회귀분석 표본</caption>
+      <title size="2xl" tabularNums={true}>30,388</title>
+    </box>
+  </row>
+  <row gap={0} height={26} radius="md" clip={true}>
+    <box background="#5485B5" width="56.1%"/>
+    <box background="#A4AAB3" width="43.9%"/>
+  </row>
+  <row>
+    <caption>포함 56.1%</caption>
+    <spacer/>
+    <caption>제외 43.9%</caption>
+  </row>
+</box>
+
+표본설계에 따른 가중치는 라벨링 표본의 추출 편향을 보정하는 것이지, 입찰 건수 결측이나 회귀 표본 선정으로 인한 선택 편향까지 자동으로 보정하지는 않습니다.
+
+**최소 리소스 보완 방법**
+
+기존 데이터를 이용하여 회귀 포함 여부에 따른 다음 항목을 비교하십시오.
+
+- 국가 및 언어
+- CPV 및 조달 절차 유형
+- M1·M2 양성 비율
+- M5 예측확률
+- 설계가중 참조 라벨 양성 비율
+
+가능하면 standardized mean difference를 이용하여 표본 간 차이를 보고하십시오.
+
+별도의 복잡한 결측 보정 모형은 이번 워크숍 논문에서는 필수적이지 않습니다. 대신 회귀분석의 추정 대상이 전체 TED 프레임이 아니라 유효한 입찰 건수가 관측된 부분 모집단임을 명확하게 제한해야 합니다.
+
+**권장 문장**
+
+> The regression estimand pertains to notices with eligible reported tender counts rather than to the entire analysis frame.
+
+**분량 관리:** 비교표는 Supplementary S6으로 이동합니다.
+
+---
+
+### 10순위. 인과적·언어적 과잉해석 제거
+
+**현재 문제점**
+
+R1은 대부분의 주장 수준을 적절히 조절하고 있지만, Discussion과 Conclusion에 여전히 실험 결과가 직접 뒷받침하지 않는 해석이 존재합니다.
+
+| 현재 표현 또는 주장 | 학술적으로 적절한 수정 방향 |
+|---|---|
+| most of the gain came from handling language | M2의 개선은 다국어 확장 및 용어 구성 변경의 결합 효과 |
+| weighting choices … can be harmful for training | 특정 가중 학습 설정에서 고정 임계값 F1이 낮아짐 |
+| a linear classifier … learned little beyond the dictionary signal | 시험한 분류기가 사전 기반 방법을 능가하지 못함 |
+| H1 … was masked by uncertainty | H1 추정치는 참조 라벨에 민감하고 불확실함 |
+| ill-conditioning stems mainly from the sparse fixed-effect block | 고정효과 블록이 원인일 가능성이 있으나 추가 진단 필요 |
+| captures roughly one third | estimated prevalence 대비 flag rate가 약 3분의 1 |
+
+마지막 항목은 특히 중요합니다.
+
+M1이 모집단 AI 관련 공고 비율의 약 3분의 1에 해당하는 수의 공고를 표시했다는 것과 실제 AI 관련 공고의 3분의 1을 찾아냈다는 것은 다릅니다.
+
+M1의 관측된 recall은 0.28이며 precision은 0.69입니다. False positive도 존재하므로 단순 비율의 차이를 탐지율로 해석해서는 안 됩니다.
+
+**권장 문장**
+
+> The English dictionary flagged notices at approximately one third of the DSL-estimated prevalence.
+
+이 수정은 Abstract, Results, Discussion, Conclusion에 일관되게 적용해야 합니다.
+
+**분량 관리:** 문장 교체만으로 해결할 수 있으며 오히려 분량이 감소합니다.
+
+---
+
+### 11순위. 수치 및 표·본문 간 일관성 전수 점검
+
+**현재 문제점**
+
+제공된 R1을 기준으로 실제 수치 및 서술을 검토한 결과, 몇 가지 수정하거나 확인해야 하는 항목이 발견됩니다.
+
+| 검토 항목 | 확인 결과 및 수정사항 |
+|---|---|
+| HT 양성 추정치 | Table 1의 반올림 합계 1,114건과 2.06%는 일치 |
+| 회귀 표본 수 | 31,661−1,271−2 = 30,388로 일치 |
+| D층 포함확률 | 정확히 450/51,756 사용 필요. 표의 0.009는 표시용 |
+| D층 표본 가중치 | 약 115.01로 본문과 일치 |
+| 라벨 비율 | 364/1,199의 비가중 양성 비율과 모집단 추정 비율 구분 필요 |
+| M4 학습 방식 | 임계값을 라벨로 조정하면서 `requires no labels`라고 서술 |
+| 언어 수 | TED 전체 24개 언어와 분석 프레임 23개 언어 구분 |
+| H3 Union 결과 | 반올림 전 차이 확인 필요: 표시값 2.36−0.83은 1.53%p |
+| LOO 분석 | 표본 제거인지 양성 라벨을 음성으로 변경한 것인지 확인 필요 |
+| H4 판단 | `could not be assessed`보다 `was not supported; estimates were inconclusive`가 명확 |
+| DSL 분산 설명 | prevalence와 regression에 대한 분산 추정 방법을 명시적으로 구분 |
+| 문장 오류 | `one-sided bootstrap p-values`의 문장 시작 대문자 수정 |
+
+특히 M4는 다음과 같이 수정해야 합니다.
+
+> M3 is label-free, whereas M4 uses a label-free similarity score with a threshold selected within training folds.
+
+추가로 **회귀 표본의 단일입찰 비율 46.2%**는 제공된 집계만으로 검산할 수 없으므로 원본 데이터와 대조해야 합니다.
+
+**최소 리소스 보완 방법**
+
+표를 LaTeX에 직접 입력하는 대신 기존 분석 코드에서 자동 생성하고, 원본 결과 파일에 대해 assertion을 적용하십시오.
+
+- 표본 수 합계
+- 층별 양성 수 합계
+- 가중치 합계
+- Precision·Recall·F1 일관성
+- 회귀계수 및 신뢰구간 단위 변환
+
+**분량 관리:** 본문 추가 없음.
+
+---
+
+### 12순위. DSL 보조 예측기 비교 및 분산 감소 검증
+
+**현재 문제점**
+
+M5의 분류 성능이 낮다는 사실만으로 DSL 보조 예측기로서 부적절하다고 판단할 수는 없습니다.
+
+DSL의 핵심은 분류 임계값에서의 F1보다 모집단의 추론 대상과 관련된 예측잔차를 얼마나 줄이는가에 있기 때문입니다.
+
+M5는 F1이 0.06이지만 사전 지정 모델 중 AUPRC는 0.33으로 가장 높았습니다.
+
+반면 M5u는 F1을 개선했음에도 DSL prevalence 추정치는 1.31%로 낮아지고 신뢰구간은 더 넓어졌습니다.
+
+**최소 리소스 보완 방법**
+
+새로운 모델을 추가로 학습하기보다는 기존 예측확률을 재사용하여 비교하십시오.
+
+| 보조 예측기 | 비교 목적 |
+|---|---|
+| 상수 0 | HT 기준선 |
+| M1·M2 | 층 내부 상수 예측기 |
+| M4 연속 유사도 또는 보정 점수 | 비지도 점수 활용 |
+| M5 확률 | 기존 DSL |
+| M6 확률 | 고전적 텍스트 분류기 |
+| M5u 확률 | 비가중 학습 효과 |
+
+각 조건에 대해 다음 지표를 계산합니다.
+
+- DSL prevalence
+- SE 및 95% CI
+- 층별 예측잔차 분산
+- HT 대비 분산 감소율
+- 설계가중 Brier score
+
+특히 D층의 잔차 분산을 보고하면 왜 DSL이 HT보다 정밀도를 개선하지 못했는지 직접 설명할 수 있습니다.
+
+단, 가장 낮은 SE를 가진 모델을 사후 선택하여 confirmatory estimator로 교체하지 말아야 합니다.
+
+**분량 관리:** 결과표는 Supplementary S7에 두고 Discussion에서 핵심 결과만 서술합니다.
+
+---
+
+### 13순위. 다중검정 및 가설검정 절차 명확화
+
+**현재 문제점**
+
+현재 H1–H3에 Holm 보정을 적용했다고 설명하지만, H2가 두 개의 하위 가설로 구성되므로 실제 검정 개수와 검정군을 정확하게 명시해야 합니다.
+
+| 가설 | 검정 방향 | 현재 결과 |
+|---|---|---|
+| H1 | 단측 | 지지되지 않음 |
+| H2a | 단측 | 지지되지 않음 |
+| H2b | 단측 | 지지되지 않음 |
+| H3 | 단측 | 지지됨 |
+| H4 | 양측 | 불확실 |
+
+**최소 리소스 보완 방법**
+
+- Holm 보정에 포함되는 검정이 H1, H2a, H2b, H3의 총 4개인지 확인
+- H4를 별도 검정군으로 둔 사전 계획상 근거 명시
+- Bootstrap p-value의 계산식과 귀무가설 중심화 여부 확인
+- 보고한 95% CI가 개별 구간인지 다중검정 보정 구간인지 명시
+- 사후 분석에는 확증적 유의성 표현을 사용하지 않음
+
+또한 M2가 가장 높은 관측 F1을 보였다는 것과 다른 모든 방법보다 통계적으로 우수하다는 것은 구분해야 합니다.
+
+M2와 M1의 paired F1 difference에 대한 설계기반 bootstrap CI를 추가하면 다국어 사전의 실질적인 개선 효과를 더욱 명확하게 설명할 수 있습니다.
+
+**분량 관리:** 검정 방법 한두 문장을 수정하고 상세 검정표를 Supplementary S8로 이동합니다.
+
+---
+
+### 14순위. 모델·데이터·참고문헌 재현성 점검
+
+**현재 문제점**
+
+재현성을 위한 정보는 충분히 많이 작성되어 있지만, 실제로 동일한 실험을 다시 실행할 수 있는 수준까지 정교화할 필요가 있습니다.
+
+Claude Haiku 5.5의 모델명은 OpenRouter에서 확인됩니다. 다만 API 별칭과 날짜가 포함된 고정 버전 식별자가 구분되어 있으므로 실제 사용한 모델 ID를 로그와 대조해야 합니다. <Cite refs={["turn650693search3","turn650693search4"]}/>
+
+| 구분 | 추가 확인 항목 |
+|---|---|
+| LLM | 실제 API model ID, provider, generation parameters |
+| Hugging Face | 모델 repository ID 및 revision hash |
+| Logistic regression | C, solver, max_iter, 가중치 정규화 여부 |
+| 교차검증 | fold ID, seed, stratification 기준 |
+| Dictionary | 전체 패턴, 정규식, 단어 경계 및 Unicode 처리 |
+| TED | 실제 검색 쿼리, 검색일, 필드명, pagination |
+| 표본 추출 | 모집단 프레임 해시, 표본 ID 및 seed |
+| 사전 분석계획 | 기존 commit과 amendment의 변경 내역 |
+| 참고문헌 | DOI, 저자명, 출판연도, 제목, 출판처 |
+| 연구비용 | API 요청 수, 모델별 비용 및 재시도 수 |
+
+추가로 다음 두 사항을 확인할 필요가 있습니다.
+
+**첫째, 인용의 직접적인 적합성입니다.** AI 노출이나 채용공고 연구가 공공조달에서 영어 사전을 일반적으로 사용한다는 주장까지 직접 뒷받침하는 것은 아닙니다. 직접적인 공공조달 연구 또는 실제 AI 조달 추적기의 방법론 자료를 1~2개 보강하거나 주장의 범위를 좁히는 것이 좋습니다.
+
+**둘째, 데이터 제공 방식입니다.** 원문을 배포하지 않는다면 공고 ID로 동일한 원문을 복원할 수 있는 데이터 수집 스크립트와 전처리 방법을 제공해야 합니다.
+
+현재 GitHub 저장소의 실제 코드 실행 결과까지 검증한 것은 아니므로 재현성에 관한 최종 판단은 해당 저장소를 점검한 이후 가능합니다.
+
+**분량 관리:** 상세 환경 정보를 `REPRODUCIBILITY.md`와 Supplementary S9로 이동하고, 본문에는 필수 실험 설정만 남깁니다.
+
+---
+
+### 15순위. 핵심 그림 1~2개 추가 및 LNCS 분량 재구성
+
+현재 연구는 분석 내용이 풍부하지만 표 5개와 긴 결과 서술 때문에 핵심 기여가 분산되어 있습니다.
+
+그림은 단순히 시각적 완성도를 높이는 용도가 아니라, **기존 표 또는 문단을 대체하면서 심사자가 핵심 결과를 빠르게 파악할 수 있도록** 구성하는 것이 좋습니다.
+
+#### 권장 Figure 1. 분류 성능 비교
+
+<card gap={2}>
+  <title>Design-weighted F1 across measurement methods</title>
+  <svg viewBox="0 0 350 267" width="100%">
+    {#each [0,.2,.4,.6,.8,1] as t}
+      <line x1={95+t*237} x2={95+t*237} y1="12" y2="224" stroke="currentColor" opacity=".12"/>
+      <text x={95+t*237} y="240" fontSize="10" fill="currentColor" textAnchor="middle">{t.toFixed(1)}</text>
+    {/each}
+    {#each [{n:"M2 Multilingual",v:.63,l:.50,h:.78},{n:"M1 English",v:.40,l:.30,h:.53},{n:"M5u (post hoc)",v:.35,l:.25,h:.50},{n:"M3 NLI",v:.20,l:.14,h:.31},{n:"M4 Prototype",v:.13,l:.08,h:.23},{n:"M6 TF-IDF",v:.10,l:.06,h:.16},{n:"M5 Embedding",v:.06,l:.03,h:.11}] as d,i}
+      <text x="88" y={27+i*30} textAnchor="end" fontSize="10" fill="currentColor">{d.n}</text>
+      <line x1={95+d.l*237} x2={95+d.h*237} y1={23+i*30} y2={23+i*30} stroke={i===0?"#247B65":"#6F8295"} strokeWidth="2"/>
+      <line x1={95+d.l*237} x2={95+d.l*237} y1={19+i*30} y2={27+i*30} stroke="#6F8295"/>
+      <line x1={95+d.h*237} x2={95+d.h*237} y1={19+i*30} y2={27+i*30} stroke="#6F8295"/>
+      <circle cx={95+d.v*237} cy={23+i*30} r="4.5" fill={i===0?"#247B65":"#6F8295"}/>
+      <text x={103+d.h*237} y={27+i*30} fontSize="10" fill="currentColor">{d.v.toFixed(2)}</text>
+    {/each}
+    <text x="214" y="259" fontSize="10" fill="currentColor" textAnchor="middle">F1 score</text>
+  </svg>
+  <caption>현재 R1 결과를 이용한 그림 구성 예시. 점은 추정치, 선은 95% CI.</caption>
+</card>
+
+Table 3을 축소하거나 대체할 수 있습니다. 다만 Precision, Recall, AUPRC와 언어별 Recall은 핵심 근거이므로 본문 축소표 또는 Supplementary에서 보존해야 합니다.
+
+#### 권장 Figure 2. 참조 라벨에 따른 추정 비율의 민감도
+
+<card gap={2}>
+  <title>Estimated prevalence across reference definitions</title>
+  <svg viewBox="0 0 350 213" width="100%">
+    {#each [0,1,2,3,4] as t}
+      <line x1={92+t*60} x2={92+t*60} y1="25" y2="170" stroke="currentColor" opacity=".12"/>
+      <text x={92+t*60} y="185" fontSize="10" fill="currentColor" textAnchor="middle">{t}%</text>
+    {/each}
+    <line x1={92+.83*60} x2={92+.83*60} y1="21" y2="170" stroke="#AA7750" strokeDasharray="4 3" strokeWidth="1.5"/>
+    <text x={92+.83*60} y="12" fontSize="10" fill="#AA7750" textAnchor="middle">M1: 0.83%</text>
+    {#each [{n:"Primary",v:2.32,l:1.57,h:3.21},{n:"Majority",v:1.84,l:1.21,h:2.66},{n:"Intersection",v:1.40,l:1.09,h:1.91},{n:"Union",v:2.36,l:1.61,h:3.26}] as d,i}
+      <text x="85" y={48+i*36} fill="currentColor" fontSize="11" textAnchor="end">{d.n}</text>
+      <line x1={92+d.l*60} x2={92+d.h*60} y1={44+i*36} y2={44+i*36} stroke="#487CA5" strokeWidth="2"/>
+      <line x1={92+d.l*60} x2={92+d.l*60} y1={39+i*36} y2={49+i*36} stroke="#487CA5"/>
+      <line x1={92+d.h*60} x2={92+d.h*60} y1={39+i*36} y2={49+i*36} stroke="#487CA5"/>
+      <circle cx={92+d.v*60} cy={44+i*36} r="5" fill="#487CA5"/>
+      <text x={92+d.v*60} y={34+i*36} fontSize="10" fill="currentColor" textAnchor="middle">{d.v.toFixed(2)}%</text>
+    {/each}
+    <text x="212" y="205" fontSize="10" fill="currentColor" textAnchor="middle">DSL-estimated prevalence</text>
+  </svg>
+  <caption>참조 라벨에 따라 추정 크기는 달라지지만 현재 보고된 모든 구간은 M1 관측 비율보다 높음.</caption>
+</card>
+
+두 그림 중 하나만 선택한다면 **Figure 2를 우선 추천합니다.** 분류 모델의 단순 성능 비교보다 측정오차와 통계적 추론의 민감도가 이 연구의 차별화된 학술적 기여이기 때문입니다.
+
+추가 분석 완료 후 최종 수치로 그림을 갱신해야 합니다.
+
+---
+
+## 4. 14쪽 이내 분량 관리 전략
+
+현재 14쪽인 R1에서 추가 실험과 그림을 모두 수용하려면 기존 서술을 약 1.5~2쪽 줄이는 방향이 필요합니다.
+
+### 본문 권장 페이지 배분
+
+<card gap={2}>
+  {#each [{n:"Title / Abstract / Keywords",v:.7},{n:"Introduction",v:1.3},{n:"Related Work",v:.8},{n:"Method",v:2.7},{n:"Experimental Setup",v:1.5},{n:"Results (그림 포함)",v:3.3},{n:"Discussion / Limitations",v:1.4},{n:"Conclusion / Declarations",v:.5},{n:"References",v:1.8}] as d}
+    <row align="center">
+      <box width="43%">
+        <text size="sm">{d.n}</text>
+      </box>
+      <box flex={1} background="#E5E7EB" height={12} radius="sm">
+        <box height={12} radius="sm" background="#6487AA" width={`${d.v/3.3*100}%`}/>
+      </box>
+      <text size="sm" tabularNums={true} width="34px" textAlign="end">{d.v.toFixed(1)}p</text>
+    </row>
+  {/each}
+  <divider/>
+  <row>
+    **합계**
+    <spacer/>
+    <title size="xl">14.0쪽</title>
+  </row>
+  <caption>실제 LaTeX 컴파일 전 목표 배분이며 표와 그림 배치에 따라 달라질 수 있음.</caption>
+</card>
+
+### 기존 본문에서 줄일 부분
+
+| 항목 | 조정 방향 | 예상 절감 |
+|---|---|---:|
+| Introduction | 연구 필요성과 기여의 중복 제거 | 0.2쪽 |
+| Related Work | 세 주제의 핵심 문헌만 유지 | 0.3쪽 |
+| Method | 학습 설정과 상세 수식 유도를 외부 자료로 이동 | 0.3쪽 |
+| Table 2 | D층 핵심 사례는 유지, 전체 사례는 외부 자료로 이동 | 0.3쪽 |
+| Table 4 | 핵심 회귀 결과만 유지하고 보조 모형 이동 | 0.3쪽 |
+| Robustness | 반복 서술을 민감도 그림과 통합 | 0.3쪽 |
+| Discussion·Limitations | Results와 반복되는 수치 및 서술 제거 | 0.3쪽 |
+| **전체** | | **약 2.0쪽** |
+
+참고문헌은 Springer LNCS 공식 템플릿과 `splncs04` 스타일 적용 여부를 확인하십시오. Springer는 학회 논문집용 공식 템플릿과 저자 지침을 제공합니다. <Cite refs={["turn650693search12","turn650693search18"]}/>
+
+폰트 크기나 행간, 페이지 여백을 강제로 줄이는 방식은 권장하지 않습니다.
+
+---
+
+## 5. Supplementary Material 권장 구성
+
+별도의 보충자료 제출이 허용되지 않는다면 GitHub 저장소의 버전 고정된 기술 부록으로 제공할 수 있습니다. 단, 심사자가 논문의 핵심 타당성을 판단하는 데 필요한 정보는 반드시 본문에도 남겨야 합니다.
+
+| 구분 | 제목 | 포함 내용 |
+|---|---|---|
+| S1 | Reference Annotation and Validation | 코드북, 인간 검토, 개별 판정 근거 |
+| S2 | Sampling and Cross-Fitting | 표본설계, fold 구성, DSL 가정 |
+| S3 | Regression Diagnostics | Schur complement, 고윳값, 축소 모형 |
+| S4 | Uncertainty Quantification | 희귀사건 CI, FPC, bootstrap, 모의실험 |
+| S5 | Outcome Construction | TED 필드 정의, 단일 lot 분석 |
+| S6 | Regression Sample Selection | 포함·제외 표본 비교 |
+| S7 | Auxiliary Predictor Analysis | 2×2 ablation, 예측기별 DSL 결과 |
+| S8 | Hypothesis Testing | 개별 p-value, Holm 보정, paired differences |
+| S9 | Reproducibility | 모델 ID, 하이퍼파라미터, 검색 쿼리, 실행환경 |
+
+본문의 Appendix도 공식 페이지 제한에 포함될 수 있으므로 페이지 제한 밖에 둘 수 있다고 가정해서는 안 됩니다.
+
+---
+
+## 6. 상위권 저널을 고려한 연구 기여 재정립
+
+현재 연구를 상위권 저널로 발전시키려면 연구 기여의 우선순위를 아래처럼 재정립하는 것이 좋습니다.
+
+<box border radius="lg" padding={3} gap={3}>
+  <box gap={1}>
+    <caption>Contribution 1 — Measurement</caption>
+    **다국어 텍스트 기반 AI 관련성 측정의 오차 정량화**
+
+    <text size="sm">영어 사전과 다국어 사전 및 지도학습 모델의 성능을 확률표본으로 평가</text>
+  </box>
+  <divider/>
+  <box gap={1}>
+    <caption>Contribution 2 — Population inference</caption>
+    **참조 라벨 및 보조 예측기 불확실성이 모집단 추정에 미치는 영향 규명**
+
+    <text size="sm">HT와 DSL의 비교, 희귀사건, 영향력이 큰 표본의 민감도 분석</text>
+  </box>
+  <divider/>
+  <box gap={1}>
+    <caption>Contribution 3 — Downstream inference</caption>
+    **텍스트 기반 측정변수를 활용한 후속 회귀분석의 한계 규명**
+
+    <text size="sm">단순 plug-in 회귀와 설계기반 보정 회귀의 차이 및 불안정성 진단</text>
+  </box>
+</box>
+
+새로운 AI 분류 알고리즘을 제안하지 않는다는 점은 이 연구의 결정적인 약점이 아닙니다. 오히려 기존 모델의 예측 정확도와 통계적 추론의 타당성이 반드시 일치하지 않는다는 사실을 보여주는 데 연구의 의미가 있습니다.
+
+다만 이를 입증하려면 DSL의 이론적 적용 조건과 참조 라벨의 타당성 문제가 해결되어야 합니다.
+
+### 권장 핵심 연구 메시지
+
+> Accurate population-level inference from multilingual procurement texts requires not only effective screening methods but also explicit treatment of reference-label uncertainty, rare-event sampling, and downstream measurement error.
+
+현재 제목은 이러한 연구 방향과 잘 맞으므로 굳이 변경하지 않아도 됩니다.
+
+**권장 제목 유지:**
+
+Measuring AI-Relatedness in Multilingual Public Procurement Notices: Dictionary-Based Screening, Embedding Classifiers, and Design-Based Inference
+
+---
+
+## 7. 실제 수정 작업 체크리스트
+
+기존 분석 코드와 데이터를 활용하여 R2를 만들 때 아래 체크리스트를 작업 기준으로 활용하는 것을 추천합니다.
+
+{@body const tasks=[["1. 영향력이 큰 표본의 인간 검증","최우선"],["2. DSL cross-fitting 및 포함확률 검증","최우선"],["3. Schur complement 및 회귀 안정성 진단","최우선"],["4. 가중 학습 × 임계값 2×2 실험","최우선"],["5. 희귀사건 신뢰구간 및 분산추정 검증","최우선"],["6. 단일 lot 및 입찰 건수 변수 검증","필수"],["7. HT 기반 H3 강건성 검증","필수"],["8. 참조 라벨 및 결측 민감도 분석","필수"],["9. 회귀 표본 선택 편향 비교","권장"],["10. 과잉해석 문장 전수 수정","필수"],["11. 수치·표·본문 자동 대조","필수"],["12. 기존 보조 예측기 DSL 비교","권장"],["13. Holm 보정 및 paired F1 검정","필수"],["14. 모델 ID 및 재현성 자료 검증","필수"],["15. 그림 제작 및 14쪽 이내 컴파일","필수"]]}
+{@body const [done,setDone]=DIL.useState(tasks.map(()=>false))}
+<card gap={3}>
+  <row align="center">
+    <title>R2 수정 진행률</title>
+    <spacer/>
+    <title size="lg" tabularNums={true}>{done.filter(Boolean).length}/15</title>
+  </row>
+  <box background="#E5E7EB" height={8} radius="full">
+    <box background="#448777" height={8} radius="full" width={`${done.filter(Boolean).length/15*100}%`}/>
+  </box>
+  {#each tasks as task,i}
+    <row align="center">
+      <checkbox checked={done[i]} onChange={v=>setDone(old=>old.map((x,j)=>i===j?v:x))} lineThrough={done[i]}>
+        <text size="sm">{task[0]}</text>
+      </checkbox>
+      <spacer/>
+      <caption>{task[1]}</caption>
+    </row>
+  {/each}
+  <divider/>
+  <button block={true} variant="outline" onClick={()=>GenUI.copy(tasks.map((t,i)=>(done[i]?"[x] ":"[ ] ")+t[0]+" ("+t[1]+")").join("\n"))}><icon name="copy" size="sm"/> 체크리스트 복사</button>
+</card>
+
+---
+
+## 8. 최종 판단
+
+| 평가 항목 | R1 | 15개 보완 후 기대 수준 |
+|---|---:|---:|
+| 연구 독창성 | 83 | 86 |
+| 실험 설계 | 85 | 92 |
+| 통계적 엄밀성 | 65 | 85 |
+| 참조 라벨 타당성 | 52 | 75 |
+| 결과 해석 | 77 | 93 |
+| 재현 가능성 | 85 | 95 |
+| 논문 전달력 | 84 | 92 |
+| **AI-Biz2027 투고 준비도** | **80** | **91** |
+| **상위권 SCI(E) 저널 준비도** | **65** | **80** |
+
+*보완 후 점수는 추가 검증에서 중대한 오류가 발견되지 않는다는 조건의 정성적 예상 평가이며, 실제 채택 확률이 아닙니다.*
+
+### 이번 수정에서 굳이 하지 않아도 되는 작업
+
+- 54,160건 전체에 대한 LLM 라벨링
+- 새로운 대형 임베딩 모델의 대규모 비교
+- LLM 파인튜닝
+- 새로운 국가별 조달 데이터 수집
+- 대규모 하이퍼파라미터 탐색
+- GPU 기반 전체 NLI 추론
+- 연구가설 또는 연구 목적의 전면 변경
+
+이러한 작업은 향후 저널 확장 연구에서 진행하는 편이 효율적입니다.
+
+다만 독립적 인간 검증이 극소수에 그치는 경우 상위권 저널에서는 여전히 전체 참조 라벨의 타당성을 문제 삼을 수 있습니다. 장기적으로는 D층의 추가 확률표본과 독립적인 인간 참조 라벨 확보가 필요합니다.
+
+이번 검토는 제공된 R1 원고와 관련 공식 자료 및 선행연구를 기준으로 수행했으며, 실제 분석 코드 실행, 개별 TED 원문 검증, 전체 참고문헌 DOI 대조, LaTeX 페이지 컴파일까지 수행한 것은 아닙니다.
+
+**결론적으로 R2에서는 실험의 양보다 검증의 질을 높여야 합니다.** 특히 1~8순위 보완에 집중하면 기존 연구 구조와 14쪽 분량을 유지하면서도 심사자가 제기할 가능성이 높은 방법론적 문제를 상당 부분 해소할 수 있습니다.
+
+[R2 추가 분석 결과(로그 값, 모두 사후 분석)]
+[HT-based H3] HT 2.06% minus M1 share 0.83% = 1.23 points (95% stratified bootstrap CI 0.55-2.11)
+[Stratum D exact] 4/450 positives; Clopper-Pearson 95% CI of rate 0.0024-0.0226; implied frame positives 126 (lower) / 460 (point) / 1170 (upper); contribution to frame share 0.23-2.16 points
+[2x2 ablation M5 F1] weighted@0.5=0.059; weighted@fold-tuned threshold=0.337; unweighted@0.5=0.357; unweighted@tuned=0.348  (so EITHER removing weights OR tuning the threshold restores F1; the failure is the fixed 0.5 threshold on design-weighted training)
+[DSL-LPM diagnosis no_controls|M5] beta=21.8 pp, SE=9.3 pp, cond(A)=40.3, pseudo-outcome range -18.1..113.6
+[DSL-LPM diagnosis no_controls|M5u] beta=32.9 pp, SE=67.8 pp, cond(A)=73.9, pseudo-outcome range -56.2..90.8
+[DSL-LPM diagnosis no_controls|M2_indicator] beta=21.6 pp, SE=9.7 pp, cond(A)=43.5, pseudo-outcome range -0.8..115.0
+[DSL-LPM diagnosis country_only|M5] beta=19.8 pp, SE=9.6 pp, cond(A)=1.69e+04, pseudo-outcome range -18.1..113.6
+[DSL-LPM diagnosis country_only|M5u] beta=75.3 pp, SE=231.8 pp, cond(A)=1.69e+04, pseudo-outcome range -56.2..90.8
+[DSL-LPM diagnosis country_only|M2_indicator] beta=19.1 pp, SE=10.1 pp, cond(A)=1.69e+04, pseudo-outcome range -0.8..115.0
+[DSL-LPM diagnosis full|M5] beta=-123.5 pp, SE=1799.2 pp, cond(A)=3.05e+06, pseudo-outcome range -18.1..113.6
+[DSL-LPM diagnosis full|M5u] beta=-24.9 pp, SE=39.9 pp, cond(A)=3.03e+06, pseudo-outcome range -56.2..90.8
+[DSL-LPM diagnosis full|M2_indicator] beta=-56.0 pp, SE=466.8 pp, cond(A)=3.05e+06, pseudo-outcome range -0.8..115.0
+[Single-bid share by procedure type, regression sample] open: n=19603, 38.6%; neg-wo-call: n=4379, 93.9%; neg-w-call: n=2603, 26.4%; restricted: n=2458, 35.2%; oth-single: n=1004, 68.4%; oth-mult: n=127, 36.2%; comp-dial: n=117, 18.8%; NA: n=60, 43.3%; comp-tend: n=32, 40.6%; innovation: n=5, 40.0%
+[Open procedures only, full controls] M1 naive -2.0 pp (CI -9.0 to 5.0), M2 naive -4.8 (CI -9.9 to 0.3), n=19603; labelled-only 2.0 (CI -9.6 to 13.7, n=430); DSL with M5 1.0 pp (SE 6.3); max pseudo-outcome 6.1 (no heavily weighted stratum-D positive in this subsample)
+[Selection] regression sample n=30388: M1 share 0.82%, M2 1.55%, English 3.9%; excluded frame notices n=23772: M1 0.85%, M2 1.72%, English 9.0%
+
+[refs.bib 키]
+angelopoulos2023, egami2023, battaglia2025, audinet2025, acemoglu2022, babina2024, eloundou2024, gentzkow2019, gilardi2023, tornberg2023, ziems2024, wang2024me5, reimers2020, conneau2020, muennighoff2023, yin2019, he2023, ahmia2018, potin2023, nai2023, siciliani2023, fazekas2016, decarolis2022, hickok2022, lozamencia2013
+
+[원고 R1 LaTeX]
+\documentclass[runningheads]{llncs}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,booktabs,graphicx}
+\usepackage{xcolor}
+% Placeholder marker for values that are NOT in the log or the original
+% manuscript. Every \tbd must be filled from the analysis output (or the
+% sentence removed) before submission.
+\newcommand{\tbd}{\textcolor{red}{\textbf{[TBD]}}}
+
+\begin{document}
+\title{Measuring AI-Relatedness in Multilingual Public Procurement Notices: Dictionary-Based Screening, Embedding Classifiers, and Design-Based Inference}
+\titlerunning{Measuring AI-Relatedness in Multilingual Procurement Notices}
+\author{Jinkyu Lee\orcidID{0000-0002-0886-1572} \and Chang Soo Sung\thanks{Corresponding author.}\orcidID{0000-0001-9284-817X}}
+\authorrunning{J. Lee and C. S. Sung}
+\institute{Department of Technology Entrepreneurship, Graduate School, Dongguk University, Seoul, Republic of Korea\\ \email{leejinkyu0612@naver.com, redsun44@dgu.ac.kr}}
+\maketitle
+
+\begin{abstract}
+Studies of public-sector AI purchasing usually identify AI contracts with English keyword lists, but the error of this measurement in multilingual procurement data and its consequences for downstream estimates are seldom quantified. We compared scalable methods for identifying AI-related notices among 54,160 IT and software award notices published in Tenders Electronic Daily (TED) in 2024--2025, of which 6.1\% were in English. A stratified probability sample of 1,199 notices was annotated with a fixed codebook by a primary large language model (LLM) and checked against a second LLM (design-weighted $\kappa=0.77$); design-based supervised learning (DSL) was used to estimate prevalence and the association between AI-relatedness and single bidding under pre-specified hypotheses. A multilingual dictionary achieved the highest F1 (0.63, 95\% CI 0.50--0.78), doubling the recall of the English dictionary (0.56 vs.\ 0.28), whereas design-weighted embedding and TF-IDF classifiers performed worse (F1 0.06 and 0.10). The DSL prevalence was 2.32\% (CI 1.57--3.21\%), about three times the 0.83\% flagged by the English dictionary; the excess persisted, though smaller, under adjudicated labels. A naive regression suggested that AI-related notices were 4.9 percentage points less likely to report a single tender, but design-based estimates were too imprecise to determine the direction of any association. Keyword-based AI indicators in procurement therefore need multilingual terms and quantified measurement error before they are used for inference.\keywords{Public procurement \and AI-relatedness \and Multilingual text classification \and Design-based supervised learning \and Measurement error \and LLM annotation.}
+\end{abstract}
+
+%======================================================================
+\section{Introduction}
+Public procurement is a principal channel through which governments acquire artificial intelligence (AI) systems and services, and the market for such contracts is of direct interest to suppliers, buyers, and regulators \cite{hickok2022}. Quantifying this market requires deciding which procurement notices concern AI. This decision is often operationalised with English keyword lists, as in studies that measure AI demand from online vacancies \cite{acemoglu2022,babina2024} and in public trackers of AI contracts. Keyword measures are transparent and cheap, but their accuracy is seldom reported against a reference annotation, and their error is rarely carried into the analyses that use them.
+
+Two features of procurement data make this omission consequential. First, European notices published in Tenders Electronic Daily (TED) are written in 24 languages \cite{ahmia2018}; in the 54,160 IT and software award notices analysed here, only 6.1\% were published in English. An English dictionary may therefore miss AI purchases in a language-dependent way, which can distort cross-country comparisons. Second, an AI indicator produced by a dictionary or a classifier is often used as a regressor in a second-stage analysis. Recent work shows that plugging machine-generated variables into regressions can yield biased estimates and invalid confidence intervals unless the measurement error is addressed \cite{battaglia2025,egami2023}, and that correction methods differ in finite samples \cite{audinet2025}.
+
+This paper examines how the measurement of AI-relatedness in procurement notices affects three quantities: classification accuracy, the estimated share of AI-related notices, and the estimated association between AI-relatedness and single bidding, a standard indicator of weak competition in procurement \cite{fazekas2016}. We compare six methods---two keyword dictionaries, a zero-shot natural language inference (NLI) classifier, an embedding-prototype score, and two supervised classifiers---against a codebook-based reference annotation of a stratified probability sample, and we apply design-based supervised learning (DSL) \cite{egami2023} to obtain prevalence and regression estimates that account for classifier error. Hypotheses, the sample design, and the codebook were fixed in an analysis plan before annotation. No human expert labels were available: the reference labels are produced by an LLM, checked against a second LLM, adjudicated post hoc by a third LLM where they matter most, and the influential cases are disclosed so that readers can judge them. The unit of analysis is the award notice; prevalence is a share of notices, not of contracts or of spending.
+
+This study contributes (i) a design-based, language-stratified evaluation of AI-relatedness measurement in multilingual procurement notices; (ii) an assessment of how prevalence estimates depend on the text-based indicator and on a small number of contested reference labels; and (iii) an examination of how measurement uncertainty propagates into downstream estimates of procurement competition, including diagnostics that show when DSL regression becomes uninformative. Code, prompts, and notice-level derived data are released (see Data and code availability)
+to support reuse in procurement monitoring. The contribution is methodological and empirical; no new learning algorithm is proposed.
+
+%======================================================================
+\section{Related Work}
+\subsubsection{Text-based measurement of AI demand.} Labour-economics studies identify AI demand through AI-related terms in job postings \cite{acemoglu2022,babina2024}, and large language models (LLMs) have been used to score occupational exposure to AI \cite{eloundou2024}. Text-as-data surveys emphasise that dictionary and supervised measures trade transparency against recall and that their error should be quantified \cite{gentzkow2019}. These studies mainly analyse English text and seldom report precision and recall against an independent annotation.
+
+\subsubsection{Procurement analytics.} TED data support multilingual corpora \cite{ahmia2018} and national award databases \cite{potin2023}. Single bidding and related indicators are widely used to assess competition and integrity risk \cite{fazekas2016,decarolis2022}. Keyword screening is a natural way to locate technology purchases in such data, but we are not aware of work that quantifies its error across languages with a probability sample, or that traces this error into competition estimates.
+
+\subsubsection{LLM annotation and inference with predicted variables.} LLMs can match or exceed crowd workers on several annotation tasks \cite{gilardi2023}, but performance varies widely across tasks \cite{ziems2024}, and agreement between LLMs does not establish accuracy because models can share errors. Prediction-powered inference (PPI) \cite{angelopoulos2023} and DSL \cite{egami2023} combine a small labelled sample with abundant predictions to obtain asymptotically valid estimates; benchmark evidence suggests that DSL often reduces bias more than PPI, although not uniformly \cite{audinet2025}. Multilingual sentence encoders \cite{wang2024me5,reimers2020} and NLI-based zero-shot classification \cite{yin2019,he2023} are alternatives to dictionaries whose performance varies by task and language \cite{muennighoff2023}.
+
+%======================================================================
+\section{Method}
+\subsection{Problem Formulation}
+Let $i=1,\dots,N$ index award notices in the analysis frame (one TED publication number each) and let $X_i\in\{0,1\}$ denote AI-relatedness as defined by a fixed codebook. $X_i$ is observed only for a labelled subsample $\mathcal{L}$ drawn with known inclusion probabilities $\pi_i$; for every notice, a method $m$ produces a prediction $\hat{X}^m_i$ or a score. We target (a) the precision, recall, and F1 of each method relative to $X$, (b) the prevalence $\theta=N^{-1}\sum_i X_i$, and (c) the coefficient $\beta$ on $X_i$ in a model of single bidding $Y_i$ with controls $W_i$. The reference annotation defines the construct operationally; it is not treated as expert ground truth.
+
+\subsection{Construct and Reference Annotation}
+A notice is AI-related if the procured object includes the development, supply, licensing, operation, or consulting and training on a system whose core functionality relies on AI techniques (machine learning, deep learning, natural language processing or LLMs, chatbots, computer vision, speech recognition or synthesis, or predictive models learned from data). Generic software, workflow automation without AI, dashboards without learning components, and hardware are coded as not AI-related. This definition follows the task-based view of AI used in vacancy studies \cite{acemoglu2022} and the procurement-risk framing of AI systems \cite{hickok2022}. Each sampled notice was annotated by a primary LLM (Claude Haiku 5.5) and a secondary LLM (Gemini 2.5 Flash-Lite) with the same zero-shot prompt (temperature 0, JSON output). The pre-specified reference is the primary label $X$. Unparsable responses are treated as missing, never as negative. Agreement is reported as Cohen's $\kappa$, unweighted and design-weighted, together with positive and negative specific agreement. Two pre-specified variants require agreement of both annotators ($X_\wedge$) or either annotator ($X_\vee$). Post hoc, a third LLM (DeepSeek-Chat-v3.1) was given the same prompt and the majority of the three labels defines $X_{\mathrm{maj}}$. The third model labelled 123 notices: those whose first two labels disagreed or lacked a secondary label, plus all primary positives in strata C and D; when only two labels were available and they differed, the third label decided.
+Because no human coders were available, this adjudication and the disclosure of all influential cases (Table~\ref{tab:cases}) replace expert validation; they do not make the labels ground truth.
+
+\subsection{Measurement Methods}
+\textbf{M1} applies an English AI dictionary (22 patterns, e.g., \textit{artificial intelligence}, \textit{machine learning}, \textit{chatbot}, \textit{LLM}) to every notice, mirroring common practice. \textbf{M2} adds core equivalents of \textit{artificial intelligence}, \textit{machine learning}, \textit{neural network}, \textit{language model}, and \textit{chatbot} in the EU languages and the abbreviations KI and IA. Because M1 and M2 define the sampling strata, both were fixed before sampling and annotation; their comparison contrasts two usable dictionaries, not a pure language effect, since M2 also differs in its term set. \textbf{M3} is zero-shot NLI with mDeBERTa-v3-base-mnli-xnli \cite{he2023,yin2019} and the hypothesis ``This procurement is about artificial intelligence'' (entailment probability $\ge 0.5$). \textbf{M4} is the maximum cosine similarity between a notice and five English prototype queries in the multilingual-e5-small space \cite{wang2024me5}, thresholded within training folds; its English prototypes make it not language-neutral. \textbf{M5}, the pre-specified embedding-based classifier, is an $L_2$-regularised logistic regression on multilingual-e5-small embeddings trained on the reference labels with weights $1/\pi_i$. \textbf{M6} replaces the embeddings with character 3--5-gram TF-IDF features, a strong classical baseline for short multilingual text. M3 and M4 require no labels. All label-trained components, including thresholds, are cross-fitted: predictions for labelled notices come from five folds that exclude them, which prevents optimistic evaluation and is required for DSL \cite{egami2023}. E5 inputs use the `passage:'/`query:' prefixes with mean pooling and $L_2$ normalisation; TF-IDF vocabularies are fitted within training folds, and unlabelled notices are scored by a model refitted on all labels.
+
+\subsection{Sampling Design and Design-Based Estimation}
+Because AI notices are rare, a simple random sample would contain few positives. The frame was partitioned into four strata: A (M1 hit), B (M2 hit but not M1), C (neither, but M4 similarity in the top 3\%), and D (remaining notices), and simple random samples were drawn without replacement within strata (seed 2027). Inclusion probabilities are $\pi_h=n_h/N_h$, where $n_h$ counts \emph{labelled} notices; in stratum C one of the 250 drawn notices received no parsable primary label, so $\pi_C$ is a nonresponse-adjusted probability that is valid if the failure is unrelated to $X$ within the stratum (Table~\ref{tab:design}). Accuracy metrics weight each labelled notice by $1/\pi_i$ and are therefore estimates for the whole frame. For prevalence and regression, DSL replaces the unobserved $X_i$ with the pseudo-outcome
+\begin{equation}
+\tilde{X}_i=\hat{g}(T_i)+\frac{R_i}{\pi_i}\bigl(X_i-\hat{g}(T_i)\bigr),
+\label{eq:pseudo}
+\end{equation}
+where $\hat{g}$ is the cross-fitted M5 probability, $T_i$ the text, and $R_i$ the labelling indicator. For a fixed $\hat{g}$, $E_p(R_i)=\pi_i$ gives $E_p(\tilde{X}_i)=X_i$ under the sampling design; with cross-fitted $\hat{g}$, $\hat\theta_{\mathrm{DSL}}=N^{-1}\sum_i\tilde{X}_i$ is consistent and asymptotically normal whatever the accuracy of $\hat{g}$, which affects only its variance \cite{egami2023}. Finite-sample unbiasedness is not claimed. Setting $\hat{g}\equiv0$ yields the Horvitz--Thompson (HT) estimator. If $\hat{g}$ is constant within strata, as the M1 and M2 indicators are, $\hat\theta_{\mathrm{DSL}}$ reduces algebraically to $\hat\theta_{\mathrm{HT}}$; a predictor can therefore improve on HT only through within-stratum variation, chiefly in stratum D.
+
+For the linear probability model $Y_i=\beta X_i+W_i^\top\gamma+\varepsilon_i$ on the regression sample $\mathcal{R}$ ($N_R$ notices), every OLS moment is linear in $X_i$ because $X_i^2=X_i$, so $\tilde{X}_i$ replaces $X_i$ wherever it appears:
+\begin{equation}
+\hat{A}=\frac{1}{N_R}\sum_{i\in\mathcal{R}}\begin{pmatrix}\tilde{X}_i & \tilde{X}_iW_i^\top\\ W_i\tilde{X}_i & W_iW_i^\top\end{pmatrix},\quad
+\hat{b}=\frac{1}{N_R}\sum_{i\in\mathcal{R}}\begin{pmatrix}\tilde{X}_iY_i\\ W_iY_i\end{pmatrix},\quad
+(\hat\beta,\hat\gamma^\top)^\top=\hat{A}^{-1}\hat{b}.
+\label{eq:moments}
+\end{equation}
+The upper-left entry uses $\tilde{X}_i$, not $\tilde{X}_i^2$. Because $\tilde{X}_i$ can be negative or far above one, $\hat{A}$ is not guaranteed to be positive definite; we report its condition number. Labelled notices in $\mathcal{R}$ keep their frame inclusion probabilities. We report sandwich standard errors and stratified bootstrap intervals, and we checked the implementation on synthetic data with a known coefficient (Sect.~\ref{sec:reg}). A linear probability model is used because the specification contains over 100 fixed effects, for which logit estimates are less stable; logit plug-in estimates are a robustness check.
+
+%======================================================================
+\section{Experimental Setup}
+\subsection{Data}
+We retrieved all TED contract award notices (eForms type \texttt{can-standard}) published between 1 January 2024 and 31 December 2025 whose CPV classification falls under IT services (72000000) or software packages (48000000), using the public TED Search API v3. TED notices may be reused for commercial and non-commercial purposes under the reuse policy of the European Commission. After deduplication by publication number (CPV matching includes additional CPV codes),
+55,508 notices from 50 buyer countries in 23 languages remained; excluding notices with fewer than ten characters of title and description left an analysis frame of $N=54{,}160$, of which 3,308 (6.1\%) were in English. The text of a notice is its procedure title and description in its first official language (median 378 characters, truncated at 2,000). No personal data are used, and notice texts are not redistributed. An award notice can cover several lots or contracts, and a result notice does not guarantee that a contract was concluded, so notice shares should not be read as contract counts or market values.
+
+Of the 54,160 frame notices, 17,864 report no received-tenders count, 4,635 report more than one (lot-level counts in multi-lot notices), and 31,661 report exactly one. Excluding counts of zero (1,271) and above 100 (2), implausible values also flagged in prior TED work \cite{potin2023}, leaves a regression sample of 30,388 notices, 630 of them labelled; 46.2\% received a single tender. A single reported count does not guarantee a single lot. The count is the eForms received-submissions value of type `tenders' (all tenders, not the SME or electronic sub-counts).
+Controls are fixed effects for buyer country (absorbing institutional differences and the currency of the contract value), CPV division (26 levels after pooling divisions with fewer than 30 notices),
+procedure type, buyer legal type, and publication quarter, plus log contract value with a missing-value indicator, following standard procurement-competition specifications \cite{fazekas2016,decarolis2022}.
+
+\subsection{Sample, Annotation, and Implementation}
+Table~\ref{tab:design} reports the sampling design. The 1,200 sampled notices were annotated by both LLMs through OpenRouter between 11:54 and 12:16 KST on 27 November 2026 (2,400 requests; total cost US\$0.14). One primary annotation (stratum C) could not be parsed, leaving 1,199 labelled notices, 364 of which were coded AI-related. The secondary model returned unparsable free text for 86 notices; re-querying them with the same prompt and an output limit of 120 tokens recovered 53, leaving 33 without a secondary label (17 in stratum D, 11 in B, 3 in A, 2 in C). The re-query and the adjudication (275 requests in total) cost US\$0.03.
+On a shared 20-thread CPU (eight threads, no GPU), the dictionaries processed the frame in 7\,s (M1) and 20\,s (M2), multilingual-e5-small embedding took 1,229\,s (23\,ms per notice), and NLI took about 4\,s per notice. Bootstrap confidence intervals (CIs) use 2,000 resamples drawn with replacement within strata of the labelled sample; classifiers and thresholds are not refitted within replicates, so these CIs reflect label sampling only.
+one-sided bootstrap $p$-values for H1--H3 are Holm-adjusted. Resampling with replacement ignores the finite-population correction, which is conservative for strata A and B; for prevalence it is immaterial, because the HT standard error is driven almost entirely by stratum D, where the sampling fraction is below 0.01.
+
+\begin{table}[t]
+\caption{Stratified reference sample. $N_h$: frame notices; drawn: sampled notices; $n_h$: notices with a parsable primary label; $\pi_h=n_h/N_h$; Pos.: notices coded AI-related by the primary annotator; Est.: weighted estimate of AI-related notices in the stratum.}\label{tab:design}
+\centering
+\begin{tabular}{llrrrrrr}
+\toprule
+Stratum & Definition & $N_h$ & Drawn & $n_h$ & $\pi_h$ & Pos. & Est. \\
+\midrule
+A & English-dictionary hit (M1) & 450 & 250 & 250 & 0.556 & 172 & 310 \\
+B & Multilingual-dictionary hit only (M2) & 428 & 250 & 250 & 0.584 & 183 & 313 \\
+C & No hit; M4 score in top 3\% & 1,526 & 250 & 249 & 0.164 & 5 & 31 \\
+D & Remaining notices & 51,756 & 450 & 450 & 0.009 & 4 & 460 \\
+\midrule
+Total & & 54,160 & 1,200 & 1,199 & & 364 & 1,114 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Pre-specified Hypotheses}
+The analysis plan was fixed before annotation and committed to the project repository (commit 7314e8d, 27 November 2026, 11:12 KST; amendment commit b1eb797, 12:22 KST)
+(a time-stamped repository commit, not an entry in an external registry). It stated: \textbf{H1} the recall of M1 is lower for non-English than for English notices, i.e., $\Delta_{\mathrm{H1}}=R_{\mathrm{non}}-R_{\mathrm{EN}}<0$; \textbf{H2} M5 attains higher F1 than M1 (H2a) and M2 (H2b); \textbf{H3} the DSL prevalence exceeds the M1 prevalence; and \textbf{H4} the DSL coefficient on AI-relatedness in the single-bidding model differs from zero (two-sided). One amendment, recorded before the affected results were computed, restricted M3 to the labelled sample because its projected CPU time for the frame exceeded the plan's six-hour rule; M3 is therefore evaluated for accuracy only. Analyses added after inspecting results, including the third-LLM adjudication, the re-query of failed secondary responses, and all leave-one-out analyses, are labelled post hoc.
+
+%======================================================================
+\section{Results}
+\subsection{Reference Annotation}
+Among the 1,166 notices with both labels after the re-query, unweighted $\kappa$ was 0.92 and design-weighted $\kappa$ was 0.77 (95\% CI 0.60--0.95); weighted positive and negative specific agreement were 0.78 and 0.996. Weighted $\kappa$ was lower for English (0.48) than for non-English notices (0.82). The gap between unweighted and weighted values reflects disagreement in the heavily weighted unflagged strata. Table~\ref{tab:cases} lists all nine primary positives in strata C and D. Each stratum-D notice carries a weight of about 115, so the four stratum-D positives account for 460 of the 1,114 estimated AI-related notices (41\%). The secondary model coded one of them AI-related (biometric face detection); the third model also coded the train-running forecast module AI-related, so $X_{\mathrm{maj}}$ retains two of the four stratum-D positives and four of the five stratum-C positives (359 positives in total). These labels rest on three LLMs, which may share errors, and not on expert judgement.
+
+\begin{table}[t]
+\caption{All primary-reference positives in the unflagged strata C and D, with labels from the secondary (S) and third, adjudicating (Adj.) LLM and the post hoc majority (Maj.). Objects are paraphrased from the notice text. Post hoc.}\label{tab:cases}
+\centering
+\begin{tabular}{llllccc}
+\toprule
+Notice & Str. & Lang. & Procured object (paraphrased) & S & Adj. & Maj. \\
+\midrule
+192940-2025 & C & ENG & Digital dictation and voice-recognition system & 1 & 1 & 1 \\
+86787-2024  & C & ENG & Biometric authentication with facial recognition & 1 & 1 & 1 \\
+327445-2025 & C & ENG & Operation and development of a statistical model & 0 & 0 & 0 \\
+678350-2025 & C & SPA & Voice assistant for primary-care appointments & 1 & 1 & 1 \\
+810556-2025 & C & ENG & Reseller services for Darktrace software & 1 & 1 & 1 \\
+755854-2025 & D & SPA & Access to specialised genetics software & 0 & 0 & 0 \\
+787623-2025 & D & RON & Integrated e-services platform and licences & 0 & 0 & 0 \\
+500255-2024 & D & ENG & Train-running forecast information (TIS) & 0 & 1 & 1 \\
+201930-2025 & D & CES & Support of a biometric face-detection system & 1 & 1 & 1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Classification Accuracy (H1, H2)}
+Table~\ref{tab:acc} reports design-weighted accuracy. The multilingual dictionary (M2) achieved the highest F1 (0.63, 95\% CI 0.50--0.78), doubling the recall of the English dictionary (0.56 vs.\ 0.28) at similar observed precision (0.71 vs.\ 0.69); the precision difference was not tested. H1 was not supported under the primary reference: the recall of M1 was 0.25 for English and 0.28 for non-English notices ($\Delta_{\mathrm{H1}}=0.04$ from unrounded recalls, CI $-0.55$ to 0.27), largely because one English stratum-D positive carries a large weight. Zero-shot NLI (M3) was precise (0.96) but missed most AI-related notices (recall 0.11; F1 0.20). H2 was not supported, and the observed differences had the opposite sign: the pre-specified design-weighted classifiers M5 and M6 predicted almost no positives at the 0.5 threshold (recall 0.03 and 0.05; F1 0.06 and 0.10), although M5 had the highest threshold-free AUPRC among pre-specified methods (0.33). The F1 differences M5$-$M1 ($-0.34$, CI $-0.45$ to $-0.26$) and M5$-$M2 ($-0.57$, CI $-0.70$ to $-0.45$) were negative (Holm-adjusted $p=1.00$ for both one-sided tests). Post hoc, training M5 without design weights raised F1 from 0.06 to 0.36 at the fixed 0.5 threshold, and additionally tuning the threshold within folds gave 0.35 (M5u). The gain is therefore attributable to the training weights rather than to the threshold; the weighted model with a tuned threshold was not estimated, so the $2\times2$ comparison is incomplete.
+
+\begin{table}[t]
+\caption{Design-weighted accuracy against the primary reference ($n=1{,}199$). R$_\mathrm{EN}$/R$_\mathrm{non}$: recall for English/non-English notices. AUPRC only for score-based methods. $^\S$Labelled sample only (amendment); excluded from prevalence and regression. $^\dagger$Post hoc variant (unweighted training, fold-internal threshold), not part of the pre-specified tests.}\label{tab:acc}
+\centering
+\begin{tabular}{lrrrrrr}
+\toprule
+Method & Precision & Recall & R$_\mathrm{EN}$ & R$_\mathrm{non}$ & F1 [95\% CI] & AUPRC \\
+\midrule
+M1 English dictionary & 0.69 & 0.28 & 0.25 & 0.28 & 0.40 [0.30, 0.53] & -- \\
+M2 Multilingual dictionary & 0.71 & 0.56 & 0.26 & 0.62 & 0.63 [0.50, 0.78] & -- \\
+M3 Zero-shot NLI$^\S$ & 0.96 & 0.11 & 0.04 & 0.13 & 0.20 [0.14, 0.31] & 0.27 \\
+M4 Prototype similarity & 0.08 & 0.31 & 0.94 & 0.18 & 0.13 [0.08, 0.23] & 0.07 \\
+M5 Embedding + LR & 1.00 & 0.03 & 0.05 & 0.03 & 0.06 [0.03, 0.11] & 0.33 \\
+M6 TF-IDF + LR & 0.97 & 0.05 & 0.03 & 0.05 & 0.10 [0.06, 0.16] & 0.27 \\
+M5u$^\dagger$ Embedding + LR & 0.41 & 0.30 & 0.08 & 0.35 & 0.35 [0.25, 0.50] & 0.34 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Prevalence (H3)}
+The design-based estimates of the share of AI-related notices were 2.06\% (HT, labels only; SE 0.42 points; CI 1.38--2.94\%) and 2.32\% (DSL with M5; SE 0.42 points; CI 1.57--3.21\%). DSL with M5 therefore did not improve precision over HT; since the M1 and M2 indicators are constant within strata, using them as $\hat{g}$ would reproduce HT exactly. Naive shares were 0.83\% for M1, 1.62\% for M2, 6.51\% for M4, and below 0.2\% for M5 and M6. The DSL estimate exceeded the M1 share by 1.49 percentage points (CI 0.73--2.38; Holm-adjusted $p=0.002$), supporting H3: the English dictionary captures roughly one third of the estimated AI-related notices. The direction of this result held in every label scenario we examined (Table~\ref{tab:sens}), but its size did not.
+
+\subsection{AI-Relatedness and Single Bidding (H4)}
+\label{sec:reg}
+Table~\ref{tab:reg} reports the linear probability coefficients. With naive plug-in indicators, the multilingual dictionary suggested that AI-related notices were 4.9 percentage points less likely to report a single tender (CI $-8.9$ to $-0.8$), whereas the English dictionary ($-1.7$, CI $-7.3$ to 3.9) and the other methods gave estimates whose CIs included zero. The labelled-only estimate was 3.1 points (CI $-8.0$ to 14.1; $n=630$). The pre-specified DSL estimate was uninformative ($\hat\beta=-124.2$ points, sandwich SE 1,812; bootstrap CI $-495$ to 429): the near-zero M5 probabilities for the heavily weighted stratum-D positives produce pseudo-outcomes far from $\{0,1\}$. The sandwich and bootstrap intervals differ greatly, itself a sign of instability. The precision tracks the number of stratum-D positives: with two of them ($X_{\mathrm{maj}}$) the SE fell to 177.2 points, and with one ($X_\wedge$) the coefficient was 6.0 points (CI $-6.7$ to 18.8). The condition number of $\hat{A}$ was $3.05\times10^{6}$ under both the primary and the majority reference; that it did not change with the pseudo-outcomes suggests that the ill-conditioning stems mainly from the sparse fixed-effect block rather than from $\tilde{X}$. In a synthetic check with a known coefficient of 0.10 and a deliberately miscalibrated predictor (200 replications), the estimator was close to the truth on average (mean 0.115, median 0.153) relative to its dispersion (mean SE 2.27), but 95\% sandwich intervals covered the truth in only 86\% of replications. We read this as evidence against a coding error in the point estimator and as a warning that sandwich intervals under-cover in this regime. The available estimates do not provide sufficiently precise evidence about the direction or magnitude of the association, so H4 could not be assessed.
+
+\begin{table}[t]
+\caption{Coefficient on AI-relatedness in a linear probability model of single bidding ($n=30{,}388$; fixed effects for country, CPV division, procedure, buyer type, and quarter; log value). Coefficients in percentage points with 95\% sandwich CIs unless noted. $^\dagger$Post hoc. $^\ddagger$Stratified bootstrap CI; sandwich SE 1,812. $X_\wedge$ uses the recovered secondary labels.}\label{tab:reg}
+\centering
+\begin{tabular}{lrrr}
+\toprule
+Measurement of AI-relatedness & AI notices & $\hat\beta$ & 95\% CI or (SE) \\
+\midrule
+M1 English dictionary (naive) & 249 & $-1.7$ & [$-7.3$, 3.9] \\
+M2 Multilingual dictionary (naive) & 470 & $-4.9$ & [$-8.9$, $-0.8$] \\
+M4 Prototype similarity (naive) & 1,575 & $-1.2$ & [$-3.6$, 1.3] \\
+M5 Embedding + LR (naive) & 31 & 2.7 & [$-12.2$, 17.6] \\
+M6 TF-IDF + LR (naive) & 34 & $-11.4$ & [$-24.2$, 1.3] \\
+Labelled notices only (weighted) & -- & 3.1 & [$-8.0$, 14.1] \\
+DSL with M5 (pre-specified) & -- & $-124.2$ & [$-495$, 429]$^\ddagger$ \\
+DSL with M5, majority reference$^\dagger$ & -- & $-42.2$ & (177.2) \\
+DSL with M5, agreement reference ($X_\wedge$) & -- & 6.0 & [$-6.7$, 18.8] \\
+DSL with M5u$^\dagger$ & -- & $-24.9$ & [$-103.1$, 53.4] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Robustness and Post hoc Analyses}
+\label{sec:robust}
+Table~\ref{tab:sens} summarises how the key estimates depend on the reference. Under the post hoc majority reference, M2 remained the best method, H1 remained unsupported ($\Delta_{\mathrm{H1}}=0.06$, CI $-0.61$ to 0.29), and the DSL prevalence fell to 1.84\%, still exceeding the M1 share (CI of the difference 0.38--1.83 points). Omitting a single stratum-D positive lowered the DSL prevalence from 2.32\% to 2.11\%, whereas omitting a stratum-C positive changed it only to 2.31\%; hence the unparsed stratum-C notice cannot materially affect the estimates. With the recovered secondary labels, the agreement reference $X_\wedge$ kept one stratum-D positive; it gave a DSL prevalence of 1.40\% (CI 1.09--1.91\%), the highest M2 F1 (0.73), and a lower recall of M1 for non-English than for English notices ($\Delta_{\mathrm{H1}}=-0.32$, CI $-0.61$ to $-0.06$); the union reference $X_\vee$ matched the primary analysis. Leave-one-out CIs were not computed. Replacing the encoder with paraphrase-multilingual-MiniLM raised M5's F1 to 0.30 but left M2 the best method. Restricting H2 to non-English notices gave F1 values of 0.40 (M1), 0.66 (M2), and 0.05 (M5). A logit plug-in model reproduced the sign pattern of Table~\ref{tab:reg} (M2 odds ratio 0.77, SE of log-odds 0.11). M5u remained below M2 in F1 (difference $-0.28$, CI $-0.39$ to $-0.18$); using its probabilities in DSL gave a prevalence of 1.31\% (CI 0.37--2.36\%).
+
+\begin{table}[t]
+\caption{Sensitivity of key estimates to the reference labels. H3: DSL prevalence minus M1 share (points). LOO: one stratum-C or stratum-D positive omitted at a time (each gave identical values within its stratum). --: not computed. $^\dagger$Post hoc. $X_\wedge$/$X_\vee$ use the recovered secondary labels (missing secondary: primary label).}\label{tab:sens}
+\centering
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrr}
+\toprule
+Reference & Pos. & M1 recall & M2 F1 [95\% CI] & DSL \% [95\% CI] & H3 [95\% CI] \\
+\midrule
+Primary $X$ & 364 & 0.28 & 0.63 [0.50, 0.78] & 2.32 [1.57, 3.21] & 1.49 [0.73, 2.38] \\
+Majority$^\dagger$ & 359 & 0.30 & 0.66 [0.54, 0.82] & 1.84 [1.21, 2.66] & 1.01 [0.38, 1.83] \\
+$X_\wedge$ & 336 & 0.39 & 0.73 [0.62, 0.80] & 1.40 [1.09, 1.91] & 0.57 [0.26, 1.08] \\
+$X_\vee$ & 374 & 0.28 & 0.64 [0.51, 0.79] & 2.36 [1.61, 3.26] & 1.52 [0.78, 2.43] \\
+LOO D$^\dagger$ & -- & 0.31 & -- & 2.11 & 1.28 \\
+LOO C$^\dagger$ & -- & 0.28 & -- & 2.31 & 1.48 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%======================================================================
+\section{Discussion}
+\subsubsection{Measurement.} The confirmatory result that survives multiplicity correction is H3: an English keyword list identified about one third of the AI-related notices estimated from the design-based sample. Its direction was stable across reference definitions, but its magnitude depends on a handful of stratum-D labels (Table~\ref{tab:sens}). Adding core terms in the EU languages doubled recall at similar observed precision, so most of the gain came from handling language rather than from a more complex model. This is consistent with the multilingual composition of TED \cite{ahmia2018} and with the transparency--recall trade-off discussed for dictionary measures \cite{gentzkow2019}. The language-specific gap predicted by H1 appeared only under the agreement reference $X_\wedge$; under the primary and majority references it was masked by the uncertainty from a few heavily weighted positives. The large English--non-English recall gap of M4 is consistent with a language bias of its English prototypes, but our design cannot establish that cause.
+
+\subsubsection{Why the supervised classifiers failed.} Contrary to H2, the embedding and TF-IDF classifiers underperformed the multilingual dictionary. Two features of the design explain this post hoc. First, training with inverse-probability weights gave each stratum-D notice a weight of about 115, whereas no notice in the dictionary strata had a weight above two ($\pi_h>0.5$), which pushed predicted probabilities towards zero; dropping the weights alone raised F1 from 0.06 to 0.36, and threshold tuning added nothing. Second, with 364 positives, most of which contain explicit AI terms, a linear classifier on general-purpose sentence embeddings learned little beyond the dictionary signal. These results do not show that supervised measurement is ineffective in general; they show that, at this label budget, weighting choices that are appropriate for estimation can be harmful for training, an implementation risk that is easy to overlook.
+
+\subsubsection{Downstream inference.} The naive multilingual-dictionary regression produced a statistically significant negative association between AI-relatedness and single bidding, whereas design-based estimates were too imprecise to determine its direction. DSL gains precision over HT only when $\hat{g}$ predicts the rare positives within the low-probability stratum \cite{egami2023,audinet2025}; here M5 did not, so DSL matched HT for prevalence and became unstable for regression, where four contested labels determined much of the variance. The practical lesson is that a significant coefficient obtained with a keyword indicator should not be read as evidence about AI procurement when the measurement error has not been quantified \cite{battaglia2025}. For procurement monitoring, the results favour a multilingual dictionary for screening, combined with a labelled probability sample that devotes more of the budget to the unflagged mass, where most of the uncertainty lies.
+
+%======================================================================
+\section{Limitations}
+The reference labels come from an LLM codebook annotation, not from expert coders. Agreement with a second LLM was moderate for English notices, and the third-LLM adjudication was post hoc; all three models may share errors, so the construct is ``AI-related according to this codebook and these annotators''. The nine disclosed cases show that prevalence conclusions depend on this choice. The label sensitivity analysis is not exhaustive. Bootstrap intervals ignore the finite-population correction, and sandwich intervals under-covered in our synthetic check. The frame covers only notices in two CPV divisions published in TED, i.e., mostly above EU thresholds, so AI purchases classified elsewhere or below thresholds are not observed, and notice shares are not contract counts or values. The regression excludes frame notices without exactly one valid tender count, which may introduce selection; a single count does not guarantee a single lot; and the controls omit buyer experience and supplier history, so omitted-variable bias is possible. All associations are non-causal. The dictionaries were written by the authors and may contain translation errors, and the stratification used M1, M2, and M4 scores, which makes the precision of estimates for other methods dependent on this design. Finally, a single small encoder and linear classifiers were tested, and the weight--threshold ablation was incomplete; fine-tuned or larger models may perform differently.
+
+%======================================================================
+\section{Conclusion}
+We evaluated how AI-related public procurement notices are identified in 54,160 multilingual TED award notices, using a pre-specified stratified reference sample and design-based estimation. A multilingual dictionary roughly doubled the recall of the English keyword approach, and the English approach captured about one third of the estimated AI-related notices, a gap whose direction was robust to contested labels but whose size was not. An apparent negative association between AI-relatedness and single bidding under naive measurement could not be confirmed after accounting for measurement error. Future work should obtain expert-adjudicated labels, draw an additional probability sample from the unflagged stratum, complete the weight--threshold ablation, test fine-tuned multilingual classifiers, and extend the analysis to national systems such as the Korean KONEPS.
+
+\begin{credits}
+\subsubsection{\ackname} The authors thank the Publications Office of the European Union for providing open access to TED notices. This research received no specific grant from any funding agency in the public, commercial, or not-for-profit sectors.
+
+\subsubsection{Author contributions.} Jinkyu Lee designed the study, carried out the experiments and the analysis, and wrote the manuscript. Chang Soo Sung reviewed the manuscript and provided feedback for its revision.
+
+\subsubsection{Data and code availability.} Code, prompts, dictionaries, the analysis plan and its amendment, annotation logs, and notice-level derived data (notice identifiers, scores, and labels, without notice texts) are available at \url{https://github.com/leejinkyu0612-hue/ted-ai-procurement-measurement}.
+
+\subsubsection{Use of generative AI.} Two LLMs (Claude Haiku 5.5 and Gemini 2.5 Flash-Lite, accessed through OpenRouter) were used as research instruments to annotate the reference sample, as described in Sect.~3.2. In addition, the authors used ChatGPT (OpenAI) and Claude (Anthropic) to assist with literature search, drafting, language editing, code generation, and structured internal review. All reported numbers are taken from logged outputs of the released code, and all references were checked against their DOI or publisher pages. The authors reviewed all content and take full responsibility for the publication.
+
+\subsubsection{\discintname} Jinkyu Lee is the founder and CEO of HappyAI; the authors declare no other competing interests.
+\end{credits}
+
+\bibliographystyle{splncs04}
+\bibliography{refs}
+\end{document}
+

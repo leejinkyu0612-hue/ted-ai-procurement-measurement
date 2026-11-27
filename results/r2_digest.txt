@@ -1,0 +1,15 @@
+[HT-based H3] HT 2.06% minus M1 share 0.83% = 1.23 points (95% stratified bootstrap CI 0.55-2.11)
+[Stratum D exact] 4/450 positives; Clopper-Pearson 95% CI of rate 0.0024-0.0226; implied frame positives 126 (lower) / 460 (point) / 1170 (upper); contribution to frame share 0.23-2.16 points
+[2x2 ablation M5 F1] weighted@0.5=0.059; weighted@fold-tuned threshold=0.337; unweighted@0.5=0.357; unweighted@tuned=0.348  (so EITHER removing weights OR tuning the threshold restores F1; the failure is the fixed 0.5 threshold on design-weighted training)
+[DSL-LPM diagnosis no_controls|M5] beta=21.8 pp, SE=9.3 pp, cond(A)=40.3, pseudo-outcome range -18.1..113.6
+[DSL-LPM diagnosis no_controls|M5u] beta=32.9 pp, SE=67.8 pp, cond(A)=73.9, pseudo-outcome range -56.2..90.8
+[DSL-LPM diagnosis no_controls|M2_indicator] beta=21.6 pp, SE=9.7 pp, cond(A)=43.5, pseudo-outcome range -0.8..115.0
+[DSL-LPM diagnosis country_only|M5] beta=19.8 pp, SE=9.6 pp, cond(A)=1.69e+04, pseudo-outcome range -18.1..113.6
+[DSL-LPM diagnosis country_only|M5u] beta=75.3 pp, SE=231.8 pp, cond(A)=1.69e+04, pseudo-outcome range -56.2..90.8
+[DSL-LPM diagnosis country_only|M2_indicator] beta=19.1 pp, SE=10.1 pp, cond(A)=1.69e+04, pseudo-outcome range -0.8..115.0
+[DSL-LPM diagnosis full|M5] beta=-123.5 pp, SE=1799.2 pp, cond(A)=3.05e+06, pseudo-outcome range -18.1..113.6
+[DSL-LPM diagnosis full|M5u] beta=-24.9 pp, SE=39.9 pp, cond(A)=3.03e+06, pseudo-outcome range -56.2..90.8
+[DSL-LPM diagnosis full|M2_indicator] beta=-56.0 pp, SE=466.8 pp, cond(A)=3.05e+06, pseudo-outcome range -0.8..115.0
+[Single-bid share by procedure type, regression sample] open: n=19603, 38.6%; neg-wo-call: n=4379, 93.9%; neg-w-call: n=2603, 26.4%; restricted: n=2458, 35.2%; oth-single: n=1004, 68.4%; oth-mult: n=127, 36.2%; comp-dial: n=117, 18.8%; NA: n=60, 43.3%; comp-tend: n=32, 40.6%; innovation: n=5, 40.0%
+[Open procedures only, full controls] M1 naive -2.0 pp (CI -9.0 to 5.0), M2 naive -4.8 (CI -9.9 to 0.3), n=19603; labelled-only 2.0 (CI -9.6 to 13.7, n=430); DSL with M5 1.0 pp (SE 6.3); max pseudo-outcome 6.1 (no heavily weighted stratum-D positive in this subsample)
+[Selection] regression sample n=30388: M1 share 0.82%, M2 1.55%, English 3.9%; excluded frame notices n=23772: M1 0.85%, M2 1.72%, English 9.0%

@@ -1,0 +1,33 @@
+14
+
+J. Lee and C. S. Sung
+
+11. Gilardi, F., Alizadeh, M., Kubli, M.: ChatGPT outperforms crowd workers for
+text-annotation tasks. Proceedings of the National Academy of Sciences 120(30),
+e2305016120 (2023). https://doi.org/10.1073/pnas.2305016120
+12. He, P., Gao, J., Chen, W.: DeBERTaV3: Improving DeBERTa using ELECTRAstyle pre-training with gradient-disentangled embedding sharing. In: The Eleventh
+International Conference on Learning Representations (ICLR 2023) (2023)
+13. Hickok, M.: Public procurement of articial intelligence systems: New risks and future proong. AI & Society 39, 12131227 (2024). https://doi.org/10.1007/s00146022-01572-2
+14. Muennigho, N., Tazi, N., Magne, L., Reimers, N.: MTEB: Massive text embedding benchmark. In: Proceedings of the 17th Conference of the European
+Chapter of the Association for Computational Linguistics. pp. 20142037 (2023).
+https://doi.org/10.18653/v1/2023.eacl-main.148
+15. Audinet de Pieuchon, N., Daoud, A., Jerzak, C.T., Johansson, M., Johansson, R.:
+Benchmarking debiasing methods for LLM-based parameter estimates. In: Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing (2025). https://doi.org/10.18653/v1/2025.emnlp-main.1000
+16. Potin, L., Labatut, V., Morand, P.H., Largeron, C.: FOPPA: An open database of
+French public procurement award notices from 20102020. Scientic Data 10, 303
+(2023). https://doi.org/10.1038/s41597-023-02213-z
+17. Reimers, N., Gurevych, I.: Making monolingual sentence embeddings multilingual
+using knowledge distillation. In: Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing (EMNLP). pp. 45124525 (2020).
+https://doi.org/10.18653/v1/2020.emnlp-main.365
+18. Wang, L., Yang, N., Huang, X., Yang, L., Majumder, R., Wei, F.: Multilingual E5
+text embeddings: A technical report. arXiv:2402.05672 (2024)
+19. Yin, W., Hay, J., Roth, D.: Benchmarking zero-shot text classication: Datasets,
+evaluation and entailment approach. In: Proceedings of the 2019 Conference on
+Empirical Methods in Natural Language Processing and the 9th International Joint
+Conference on Natural Language Processing (EMNLP-IJCNLP). pp. 39123921
+(2019). https://doi.org/10.18653/v1/D19-1404
+20. Ziems, C., Held, W., Shaikh, O., Chen, J., Zhang, Z., Yang, D.: Can large language
+models transform computational social science? Computational Linguistics 50(1),
+237291 (2024). https://doi.org/10.1162/coli_a_00502
+
+
