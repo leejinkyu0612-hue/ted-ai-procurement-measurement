@@ -1,0 +1,9 @@
+data/raw/
+data/*.parquet
+data/*.npy
+data/text_*
+logs/fetch_*
+*.tmp
+__pycache__/
+scripts/_pdfhead.py
+scripts/make_wiki.py

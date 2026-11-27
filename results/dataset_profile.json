@@ -1,0 +1,51 @@
+{
+ "unique_notices": 55508,
+ "years": {
+  "2025": 30277,
+  "2024": 25231
+ },
+ "languages_top": {
+  "DEU": 9755,
+  "SPA": 7302,
+  "CES": 5105,
+  "POL": 4993,
+  "FRA": 4245,
+  "ENG": 3417,
+  "RON": 2847,
+  "NLD": 2558,
+  "SWE": 1876,
+  "LIT": 1740,
+  "POR": 1623,
+  "FIN": 1306,
+  "BUL": 1246,
+  "ITA": 1040,
+  "SLV": 1038,
+  "HRV": 967,
+  "ELL": 929,
+  "SLK": 929,
+  "HUN": 858,
+  "EST": 723,
+  "DAN": 513,
+  "LAV": 492,
+  "GLE": 6
+ },
+ "countries_n": 50,
+ "cpv_div": {
+  "72": 31356,
+  "48": 13990,
+  "30": 3036,
+  "32": 1199,
+  "79": 1028,
+  "71": 729,
+  "50": 507,
+  "38": 421,
+  "33": 372,
+  "64": 364
+ },
+ "empty_text": 1344,
+ "single_tenders_field": 31661,
+ "no_tenders_field": 19212,
+ "multi_tenders_field": 4635,
+ "value_missing": 6887,
+ "text_chars_median": 378.0
+}
