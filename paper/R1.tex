@@ -1,0 +1,232 @@
+\documentclass[runningheads]{llncs}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,booktabs,graphicx}
+\usepackage{xcolor}
+% Placeholder marker for values that are NOT in the log or the original
+% manuscript. Every \tbd must be filled from the analysis output (or the
+% sentence removed) before submission.
+\newcommand{\tbd}{\textcolor{red}{\textbf{[TBD]}}}
+
+\begin{document}
+\title{Measuring AI-Relatedness in Multilingual Public Procurement Notices: Dictionary-Based Screening, Embedding Classifiers, and Design-Based Inference}
+\titlerunning{Measuring AI-Relatedness in Multilingual Procurement Notices}
+\author{Jinkyu Lee\orcidID{0000-0002-0886-1572} \and Chang Soo Sung\thanks{Corresponding author.}\orcidID{0000-0001-9284-817X}}
+\authorrunning{J. Lee and C. S. Sung}
+\institute{Department of Technology Entrepreneurship, Graduate School, Dongguk University, Seoul, Republic of Korea\\ \email{leejinkyu0612@naver.com, redsun44@dgu.ac.kr}}
+\maketitle
+
+\begin{abstract}
+Studies of public-sector AI purchasing usually identify AI contracts with English keyword lists, but the error of this measurement in multilingual procurement data and its consequences for downstream estimates are seldom quantified. We compared scalable methods for identifying AI-related notices among 54,160 IT and software award notices published in Tenders Electronic Daily (TED) in 2024--2025, of which 6.1\% were in English. A stratified probability sample of 1,199 notices was annotated with a fixed codebook by a primary large language model (LLM) and checked against a second LLM (design-weighted $\kappa=0.77$); design-based supervised learning (DSL) was used to estimate prevalence and the association between AI-relatedness and single bidding under pre-specified hypotheses. A multilingual dictionary achieved the highest F1 (0.63, 95\% CI 0.50--0.78), doubling the recall of the English dictionary (0.56 vs.\ 0.28), whereas design-weighted embedding and TF-IDF classifiers performed worse (F1 0.06 and 0.10). The DSL prevalence was 2.32\% (CI 1.57--3.21\%), about three times the 0.83\% flagged by the English dictionary; the excess persisted, though smaller, under adjudicated labels. A naive regression suggested that AI-related notices were 4.9 percentage points less likely to report a single tender, but design-based estimates were too imprecise to determine the direction of any association. Keyword-based AI indicators in procurement therefore need multilingual terms and quantified measurement error before they are used for inference.\keywords{Public procurement \and AI-relatedness \and Multilingual text classification \and Design-based supervised learning \and Measurement error \and LLM annotation.}
+\end{abstract}
+
+%======================================================================
+\section{Introduction}
+Public procurement is a principal channel through which governments acquire artificial intelligence (AI) systems and services, and the market for such contracts is of direct interest to suppliers, buyers, and regulators \cite{hickok2022}. Quantifying this market requires deciding which procurement notices concern AI. This decision is often operationalised with English keyword lists, as in studies that measure AI demand from online vacancies \cite{acemoglu2022,babina2024} and in public trackers of AI contracts. Keyword measures are transparent and cheap, but their accuracy is seldom reported against a reference annotation, and their error is rarely carried into the analyses that use them.
+
+Two features of procurement data make this omission consequential. First, European notices published in Tenders Electronic Daily (TED) are written in 24 languages \cite{ahmia2018}; in the 54,160 IT and software award notices analysed here, only 6.1\% were published in English. An English dictionary may therefore miss AI purchases in a language-dependent way, which can distort cross-country comparisons. Second, an AI indicator produced by a dictionary or a classifier is often used as a regressor in a second-stage analysis. Recent work shows that plugging machine-generated variables into regressions can yield biased estimates and invalid confidence intervals unless the measurement error is addressed \cite{battaglia2025,egami2023}, and that correction methods differ in finite samples \cite{audinet2025}.
+
+This paper examines how the measurement of AI-relatedness in procurement notices affects three quantities: classification accuracy, the estimated share of AI-related notices, and the estimated association between AI-relatedness and single bidding, a standard indicator of weak competition in procurement \cite{fazekas2016}. We compare six methods---two keyword dictionaries, a zero-shot natural language inference (NLI) classifier, an embedding-prototype score, and two supervised classifiers---against a codebook-based reference annotation of a stratified probability sample, and we apply design-based supervised learning (DSL) \cite{egami2023} to obtain prevalence and regression estimates that account for classifier error. Hypotheses, the sample design, and the codebook were fixed in an analysis plan before annotation. No human expert labels were available: the reference labels are produced by an LLM, checked against a second LLM, adjudicated post hoc by a third LLM where they matter most, and the influential cases are disclosed so that readers can judge them. The unit of analysis is the award notice; prevalence is a share of notices, not of contracts or of spending.
+
+This study contributes (i) a design-based, language-stratified evaluation of AI-relatedness measurement in multilingual procurement notices; (ii) an assessment of how prevalence estimates depend on the text-based indicator and on a small number of contested reference labels; and (iii) an examination of how measurement uncertainty propagates into downstream estimates of procurement competition, including diagnostics that show when DSL regression becomes uninformative. Code, prompts, and notice-level derived data are released (see Data and code availability)
+to support reuse in procurement monitoring. The contribution is methodological and empirical; no new learning algorithm is proposed.
+
+%======================================================================
+\section{Related Work}
+\subsubsection{Text-based measurement of AI demand.} Labour-economics studies identify AI demand through AI-related terms in job postings \cite{acemoglu2022,babina2024}, and large language models (LLMs) have been used to score occupational exposure to AI \cite{eloundou2024}. Text-as-data surveys emphasise that dictionary and supervised measures trade transparency against recall and that their error should be quantified \cite{gentzkow2019}. These studies mainly analyse English text and seldom report precision and recall against an independent annotation.
+
+\subsubsection{Procurement analytics.} TED data support multilingual corpora \cite{ahmia2018} and national award databases \cite{potin2023}. Single bidding and related indicators are widely used to assess competition and integrity risk \cite{fazekas2016,decarolis2022}. Keyword screening is a natural way to locate technology purchases in such data, but we are not aware of work that quantifies its error across languages with a probability sample, or that traces this error into competition estimates.
+
+\subsubsection{LLM annotation and inference with predicted variables.} LLMs can match or exceed crowd workers on several annotation tasks \cite{gilardi2023}, but performance varies widely across tasks \cite{ziems2024}, and agreement between LLMs does not establish accuracy because models can share errors. Prediction-powered inference (PPI) \cite{angelopoulos2023} and DSL \cite{egami2023} combine a small labelled sample with abundant predictions to obtain asymptotically valid estimates; benchmark evidence suggests that DSL often reduces bias more than PPI, although not uniformly \cite{audinet2025}. Multilingual sentence encoders \cite{wang2024me5,reimers2020} and NLI-based zero-shot classification \cite{yin2019,he2023} are alternatives to dictionaries whose performance varies by task and language \cite{muennighoff2023}.
+
+%======================================================================
+\section{Method}
+\subsection{Problem Formulation}
+Let $i=1,\dots,N$ index award notices in the analysis frame (one TED publication number each) and let $X_i\in\{0,1\}$ denote AI-relatedness as defined by a fixed codebook. $X_i$ is observed only for a labelled subsample $\mathcal{L}$ drawn with known inclusion probabilities $\pi_i$; for every notice, a method $m$ produces a prediction $\hat{X}^m_i$ or a score. We target (a) the precision, recall, and F1 of each method relative to $X$, (b) the prevalence $\theta=N^{-1}\sum_i X_i$, and (c) the coefficient $\beta$ on $X_i$ in a model of single bidding $Y_i$ with controls $W_i$. The reference annotation defines the construct operationally; it is not treated as expert ground truth.
+
+\subsection{Construct and Reference Annotation}
+A notice is AI-related if the procured object includes the development, supply, licensing, operation, or consulting and training on a system whose core functionality relies on AI techniques (machine learning, deep learning, natural language processing or LLMs, chatbots, computer vision, speech recognition or synthesis, or predictive models learned from data). Generic software, workflow automation without AI, dashboards without learning components, and hardware are coded as not AI-related. This definition follows the task-based view of AI used in vacancy studies \cite{acemoglu2022} and the procurement-risk framing of AI systems \cite{hickok2022}. Each sampled notice was annotated by a primary LLM (Claude Haiku 5.5) and a secondary LLM (Gemini 2.5 Flash-Lite) with the same zero-shot prompt (temperature 0, JSON output). The pre-specified reference is the primary label $X$. Unparsable responses are treated as missing, never as negative. Agreement is reported as Cohen's $\kappa$, unweighted and design-weighted, together with positive and negative specific agreement. Two pre-specified variants require agreement of both annotators ($X_\wedge$) or either annotator ($X_\vee$). Post hoc, a third LLM (DeepSeek-Chat-v3.1) was given the same prompt and the majority of the three labels defines $X_{\mathrm{maj}}$. The third model labelled 123 notices: those whose first two labels disagreed or lacked a secondary label, plus all primary positives in strata C and D; when only two labels were available and they differed, the third label decided.
+Because no human coders were available, this adjudication and the disclosure of all influential cases (Table~\ref{tab:cases}) replace expert validation; they do not make the labels ground truth.
+
+\subsection{Measurement Methods}
+\textbf{M1} applies an English AI dictionary (22 patterns, e.g., \textit{artificial intelligence}, \textit{machine learning}, \textit{chatbot}, \textit{LLM}) to every notice, mirroring common practice. \textbf{M2} adds core equivalents of \textit{artificial intelligence}, \textit{machine learning}, \textit{neural network}, \textit{language model}, and \textit{chatbot} in the EU languages and the abbreviations KI and IA. Because M1 and M2 define the sampling strata, both were fixed before sampling and annotation; their comparison contrasts two usable dictionaries, not a pure language effect, since M2 also differs in its term set. \textbf{M3} is zero-shot NLI with mDeBERTa-v3-base-mnli-xnli \cite{he2023,yin2019} and the hypothesis ``This procurement is about artificial intelligence'' (entailment probability $\ge 0.5$). \textbf{M4} is the maximum cosine similarity between a notice and five English prototype queries in the multilingual-e5-small space \cite{wang2024me5}, thresholded within training folds; its English prototypes make it not language-neutral. \textbf{M5}, the pre-specified embedding-based classifier, is an $L_2$-regularised logistic regression on multilingual-e5-small embeddings trained on the reference labels with weights $1/\pi_i$. \textbf{M6} replaces the embeddings with character 3--5-gram TF-IDF features, a strong classical baseline for short multilingual text. M3 and M4 require no labels. All label-trained components, including thresholds, are cross-fitted: predictions for labelled notices come from five folds that exclude them, which prevents optimistic evaluation and is required for DSL \cite{egami2023}. E5 inputs use the `passage:'/`query:' prefixes with mean pooling and $L_2$ normalisation; TF-IDF vocabularies are fitted within training folds, and unlabelled notices are scored by a model refitted on all labels.
+
+\subsection{Sampling Design and Design-Based Estimation}
+Because AI notices are rare, a simple random sample would contain few positives. The frame was partitioned into four strata: A (M1 hit), B (M2 hit but not M1), C (neither, but M4 similarity in the top 3\%), and D (remaining notices), and simple random samples were drawn without replacement within strata (seed 2027). Inclusion probabilities are $\pi_h=n_h/N_h$, where $n_h$ counts \emph{labelled} notices; in stratum C one of the 250 drawn notices received no parsable primary label, so $\pi_C$ is a nonresponse-adjusted probability that is valid if the failure is unrelated to $X$ within the stratum (Table~\ref{tab:design}). Accuracy metrics weight each labelled notice by $1/\pi_i$ and are therefore estimates for the whole frame. For prevalence and regression, DSL replaces the unobserved $X_i$ with the pseudo-outcome
+\begin{equation}
+\tilde{X}_i=\hat{g}(T_i)+\frac{R_i}{\pi_i}\bigl(X_i-\hat{g}(T_i)\bigr),
+\label{eq:pseudo}
+\end{equation}
+where $\hat{g}$ is the cross-fitted M5 probability, $T_i$ the text, and $R_i$ the labelling indicator. For a fixed $\hat{g}$, $E_p(R_i)=\pi_i$ gives $E_p(\tilde{X}_i)=X_i$ under the sampling design; with cross-fitted $\hat{g}$, $\hat\theta_{\mathrm{DSL}}=N^{-1}\sum_i\tilde{X}_i$ is consistent and asymptotically normal whatever the accuracy of $\hat{g}$, which affects only its variance \cite{egami2023}. Finite-sample unbiasedness is not claimed. Setting $\hat{g}\equiv0$ yields the Horvitz--Thompson (HT) estimator. If $\hat{g}$ is constant within strata, as the M1 and M2 indicators are, $\hat\theta_{\mathrm{DSL}}$ reduces algebraically to $\hat\theta_{\mathrm{HT}}$; a predictor can therefore improve on HT only through within-stratum variation, chiefly in stratum D.
+
+For the linear probability model $Y_i=\beta X_i+W_i^\top\gamma+\varepsilon_i$ on the regression sample $\mathcal{R}$ ($N_R$ notices), every OLS moment is linear in $X_i$ because $X_i^2=X_i$, so $\tilde{X}_i$ replaces $X_i$ wherever it appears:
+\begin{equation}
+\hat{A}=\frac{1}{N_R}\sum_{i\in\mathcal{R}}\begin{pmatrix}\tilde{X}_i & \tilde{X}_iW_i^\top\\ W_i\tilde{X}_i & W_iW_i^\top\end{pmatrix},\quad
+\hat{b}=\frac{1}{N_R}\sum_{i\in\mathcal{R}}\begin{pmatrix}\tilde{X}_iY_i\\ W_iY_i\end{pmatrix},\quad
+(\hat\beta,\hat\gamma^\top)^\top=\hat{A}^{-1}\hat{b}.
+\label{eq:moments}
+\end{equation}
+The upper-left entry uses $\tilde{X}_i$, not $\tilde{X}_i^2$. Because $\tilde{X}_i$ can be negative or far above one, $\hat{A}$ is not guaranteed to be positive definite; we report its condition number. Labelled notices in $\mathcal{R}$ keep their frame inclusion probabilities. We report sandwich standard errors and stratified bootstrap intervals, and we checked the implementation on synthetic data with a known coefficient (Sect.~\ref{sec:reg}). A linear probability model is used because the specification contains over 100 fixed effects, for which logit estimates are less stable; logit plug-in estimates are a robustness check.
+
+%======================================================================
+\section{Experimental Setup}
+\subsection{Data}
+We retrieved all TED contract award notices (eForms type \texttt{can-standard}) published between 1 January 2024 and 31 December 2025 whose CPV classification falls under IT services (72000000) or software packages (48000000), using the public TED Search API v3. TED notices may be reused for commercial and non-commercial purposes under the reuse policy of the European Commission. After deduplication by publication number (CPV matching includes additional CPV codes),
+55,508 notices from 50 buyer countries in 23 languages remained; excluding notices with fewer than ten characters of title and description left an analysis frame of $N=54{,}160$, of which 3,308 (6.1\%) were in English. The text of a notice is its procedure title and description in its first official language (median 378 characters, truncated at 2,000). No personal data are used, and notice texts are not redistributed. An award notice can cover several lots or contracts, and a result notice does not guarantee that a contract was concluded, so notice shares should not be read as contract counts or market values.
+
+Of the 54,160 frame notices, 17,864 report no received-tenders count, 4,635 report more than one (lot-level counts in multi-lot notices), and 31,661 report exactly one. Excluding counts of zero (1,271) and above 100 (2), implausible values also flagged in prior TED work \cite{potin2023}, leaves a regression sample of 30,388 notices, 630 of them labelled; 46.2\% received a single tender. A single reported count does not guarantee a single lot. The count is the eForms received-submissions value of type `tenders' (all tenders, not the SME or electronic sub-counts).
+Controls are fixed effects for buyer country (absorbing institutional differences and the currency of the contract value), CPV division (26 levels after pooling divisions with fewer than 30 notices),
+procedure type, buyer legal type, and publication quarter, plus log contract value with a missing-value indicator, following standard procurement-competition specifications \cite{fazekas2016,decarolis2022}.
+
+\subsection{Sample, Annotation, and Implementation}
+Table~\ref{tab:design} reports the sampling design. The 1,200 sampled notices were annotated by both LLMs through OpenRouter between 11:54 and 12:16 KST on 27 November 2026 (2,400 requests; total cost US\$0.14). One primary annotation (stratum C) could not be parsed, leaving 1,199 labelled notices, 364 of which were coded AI-related. The secondary model returned unparsable free text for 86 notices; re-querying them with the same prompt and an output limit of 120 tokens recovered 53, leaving 33 without a secondary label (17 in stratum D, 11 in B, 3 in A, 2 in C). The re-query and the adjudication (275 requests in total) cost US\$0.03.
+On a shared 20-thread CPU (eight threads, no GPU), the dictionaries processed the frame in 7\,s (M1) and 20\,s (M2), multilingual-e5-small embedding took 1,229\,s (23\,ms per notice), and NLI took about 4\,s per notice. Bootstrap confidence intervals (CIs) use 2,000 resamples drawn with replacement within strata of the labelled sample; classifiers and thresholds are not refitted within replicates, so these CIs reflect label sampling only.
+one-sided bootstrap $p$-values for H1--H3 are Holm-adjusted. Resampling with replacement ignores the finite-population correction, which is conservative for strata A and B; for prevalence it is immaterial, because the HT standard error is driven almost entirely by stratum D, where the sampling fraction is below 0.01.
+
+\begin{table}[t]
+\caption{Stratified reference sample. $N_h$: frame notices; drawn: sampled notices; $n_h$: notices with a parsable primary label; $\pi_h=n_h/N_h$; Pos.: notices coded AI-related by the primary annotator; Est.: weighted estimate of AI-related notices in the stratum.}\label{tab:design}
+\centering
+\begin{tabular}{llrrrrrr}
+\toprule
+Stratum & Definition & $N_h$ & Drawn & $n_h$ & $\pi_h$ & Pos. & Est. \\
+\midrule
+A & English-dictionary hit (M1) & 450 & 250 & 250 & 0.556 & 172 & 310 \\
+B & Multilingual-dictionary hit only (M2) & 428 & 250 & 250 & 0.584 & 183 & 313 \\
+C & No hit; M4 score in top 3\% & 1,526 & 250 & 249 & 0.164 & 5 & 31 \\
+D & Remaining notices & 51,756 & 450 & 450 & 0.009 & 4 & 460 \\
+\midrule
+Total & & 54,160 & 1,200 & 1,199 & & 364 & 1,114 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Pre-specified Hypotheses}
+The analysis plan was fixed before annotation and committed to the project repository (commit 7314e8d, 27 November 2026, 11:12 KST; amendment commit b1eb797, 12:22 KST)
+(a time-stamped repository commit, not an entry in an external registry). It stated: \textbf{H1} the recall of M1 is lower for non-English than for English notices, i.e., $\Delta_{\mathrm{H1}}=R_{\mathrm{non}}-R_{\mathrm{EN}}<0$; \textbf{H2} M5 attains higher F1 than M1 (H2a) and M2 (H2b); \textbf{H3} the DSL prevalence exceeds the M1 prevalence; and \textbf{H4} the DSL coefficient on AI-relatedness in the single-bidding model differs from zero (two-sided). One amendment, recorded before the affected results were computed, restricted M3 to the labelled sample because its projected CPU time for the frame exceeded the plan's six-hour rule; M3 is therefore evaluated for accuracy only. Analyses added after inspecting results, including the third-LLM adjudication, the re-query of failed secondary responses, and all leave-one-out analyses, are labelled post hoc.
+
+%======================================================================
+\section{Results}
+\subsection{Reference Annotation}
+Among the 1,166 notices with both labels after the re-query, unweighted $\kappa$ was 0.92 and design-weighted $\kappa$ was 0.77 (95\% CI 0.60--0.95); weighted positive and negative specific agreement were 0.78 and 0.996. Weighted $\kappa$ was lower for English (0.48) than for non-English notices (0.82). The gap between unweighted and weighted values reflects disagreement in the heavily weighted unflagged strata. Table~\ref{tab:cases} lists all nine primary positives in strata C and D. Each stratum-D notice carries a weight of about 115, so the four stratum-D positives account for 460 of the 1,114 estimated AI-related notices (41\%). The secondary model coded one of them AI-related (biometric face detection); the third model also coded the train-running forecast module AI-related, so $X_{\mathrm{maj}}$ retains two of the four stratum-D positives and four of the five stratum-C positives (359 positives in total). These labels rest on three LLMs, which may share errors, and not on expert judgement.
+
+\begin{table}[t]
+\caption{All primary-reference positives in the unflagged strata C and D, with labels from the secondary (S) and third, adjudicating (Adj.) LLM and the post hoc majority (Maj.). Objects are paraphrased from the notice text. Post hoc.}\label{tab:cases}
+\centering
+\begin{tabular}{llllccc}
+\toprule
+Notice & Str. & Lang. & Procured object (paraphrased) & S & Adj. & Maj. \\
+\midrule
+192940-2025 & C & ENG & Digital dictation and voice-recognition system & 1 & 1 & 1 \\
+86787-2024  & C & ENG & Biometric authentication with facial recognition & 1 & 1 & 1 \\
+327445-2025 & C & ENG & Operation and development of a statistical model & 0 & 0 & 0 \\
+678350-2025 & C & SPA & Voice assistant for primary-care appointments & 1 & 1 & 1 \\
+810556-2025 & C & ENG & Reseller services for Darktrace software & 1 & 1 & 1 \\
+755854-2025 & D & SPA & Access to specialised genetics software & 0 & 0 & 0 \\
+787623-2025 & D & RON & Integrated e-services platform and licences & 0 & 0 & 0 \\
+500255-2024 & D & ENG & Train-running forecast information (TIS) & 0 & 1 & 1 \\
+201930-2025 & D & CES & Support of a biometric face-detection system & 1 & 1 & 1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Classification Accuracy (H1, H2)}
+Table~\ref{tab:acc} reports design-weighted accuracy. The multilingual dictionary (M2) achieved the highest F1 (0.63, 95\% CI 0.50--0.78), doubling the recall of the English dictionary (0.56 vs.\ 0.28) at similar observed precision (0.71 vs.\ 0.69); the precision difference was not tested. H1 was not supported under the primary reference: the recall of M1 was 0.25 for English and 0.28 for non-English notices ($\Delta_{\mathrm{H1}}=0.04$ from unrounded recalls, CI $-0.55$ to 0.27), largely because one English stratum-D positive carries a large weight. Zero-shot NLI (M3) was precise (0.96) but missed most AI-related notices (recall 0.11; F1 0.20). H2 was not supported, and the observed differences had the opposite sign: the pre-specified design-weighted classifiers M5 and M6 predicted almost no positives at the 0.5 threshold (recall 0.03 and 0.05; F1 0.06 and 0.10), although M5 had the highest threshold-free AUPRC among pre-specified methods (0.33). The F1 differences M5$-$M1 ($-0.34$, CI $-0.45$ to $-0.26$) and M5$-$M2 ($-0.57$, CI $-0.70$ to $-0.45$) were negative (Holm-adjusted $p=1.00$ for both one-sided tests). Post hoc, training M5 without design weights raised F1 from 0.06 to 0.36 at the fixed 0.5 threshold, and additionally tuning the threshold within folds gave 0.35 (M5u). The gain is therefore attributable to the training weights rather than to the threshold; the weighted model with a tuned threshold was not estimated, so the $2\times2$ comparison is incomplete.
+
+\begin{table}[t]
+\caption{Design-weighted accuracy against the primary reference ($n=1{,}199$). R$_\mathrm{EN}$/R$_\mathrm{non}$: recall for English/non-English notices. AUPRC only for score-based methods. $^\S$Labelled sample only (amendment); excluded from prevalence and regression. $^\dagger$Post hoc variant (unweighted training, fold-internal threshold), not part of the pre-specified tests.}\label{tab:acc}
+\centering
+\begin{tabular}{lrrrrrr}
+\toprule
+Method & Precision & Recall & R$_\mathrm{EN}$ & R$_\mathrm{non}$ & F1 [95\% CI] & AUPRC \\
+\midrule
+M1 English dictionary & 0.69 & 0.28 & 0.25 & 0.28 & 0.40 [0.30, 0.53] & -- \\
+M2 Multilingual dictionary & 0.71 & 0.56 & 0.26 & 0.62 & 0.63 [0.50, 0.78] & -- \\
+M3 Zero-shot NLI$^\S$ & 0.96 & 0.11 & 0.04 & 0.13 & 0.20 [0.14, 0.31] & 0.27 \\
+M4 Prototype similarity & 0.08 & 0.31 & 0.94 & 0.18 & 0.13 [0.08, 0.23] & 0.07 \\
+M5 Embedding + LR & 1.00 & 0.03 & 0.05 & 0.03 & 0.06 [0.03, 0.11] & 0.33 \\
+M6 TF-IDF + LR & 0.97 & 0.05 & 0.03 & 0.05 & 0.10 [0.06, 0.16] & 0.27 \\
+M5u$^\dagger$ Embedding + LR & 0.41 & 0.30 & 0.08 & 0.35 & 0.35 [0.25, 0.50] & 0.34 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Prevalence (H3)}
+The design-based estimates of the share of AI-related notices were 2.06\% (HT, labels only; SE 0.42 points; CI 1.38--2.94\%) and 2.32\% (DSL with M5; SE 0.42 points; CI 1.57--3.21\%). DSL with M5 therefore did not improve precision over HT; since the M1 and M2 indicators are constant within strata, using them as $\hat{g}$ would reproduce HT exactly. Naive shares were 0.83\% for M1, 1.62\% for M2, 6.51\% for M4, and below 0.2\% for M5 and M6. The DSL estimate exceeded the M1 share by 1.49 percentage points (CI 0.73--2.38; Holm-adjusted $p=0.002$), supporting H3: the English dictionary captures roughly one third of the estimated AI-related notices. The direction of this result held in every label scenario we examined (Table~\ref{tab:sens}), but its size did not.
+
+\subsection{AI-Relatedness and Single Bidding (H4)}
+\label{sec:reg}
+Table~\ref{tab:reg} reports the linear probability coefficients. With naive plug-in indicators, the multilingual dictionary suggested that AI-related notices were 4.9 percentage points less likely to report a single tender (CI $-8.9$ to $-0.8$), whereas the English dictionary ($-1.7$, CI $-7.3$ to 3.9) and the other methods gave estimates whose CIs included zero. The labelled-only estimate was 3.1 points (CI $-8.0$ to 14.1; $n=630$). The pre-specified DSL estimate was uninformative ($\hat\beta=-124.2$ points, sandwich SE 1,812; bootstrap CI $-495$ to 429): the near-zero M5 probabilities for the heavily weighted stratum-D positives produce pseudo-outcomes far from $\{0,1\}$. The sandwich and bootstrap intervals differ greatly, itself a sign of instability. The precision tracks the number of stratum-D positives: with two of them ($X_{\mathrm{maj}}$) the SE fell to 177.2 points, and with one ($X_\wedge$) the coefficient was 6.0 points (CI $-6.7$ to 18.8). The condition number of $\hat{A}$ was $3.05\times10^{6}$ under both the primary and the majority reference; that it did not change with the pseudo-outcomes suggests that the ill-conditioning stems mainly from the sparse fixed-effect block rather than from $\tilde{X}$. In a synthetic check with a known coefficient of 0.10 and a deliberately miscalibrated predictor (200 replications), the estimator was close to the truth on average (mean 0.115, median 0.153) relative to its dispersion (mean SE 2.27), but 95\% sandwich intervals covered the truth in only 86\% of replications. We read this as evidence against a coding error in the point estimator and as a warning that sandwich intervals under-cover in this regime. The available estimates do not provide sufficiently precise evidence about the direction or magnitude of the association, so H4 could not be assessed.
+
+\begin{table}[t]
+\caption{Coefficient on AI-relatedness in a linear probability model of single bidding ($n=30{,}388$; fixed effects for country, CPV division, procedure, buyer type, and quarter; log value). Coefficients in percentage points with 95\% sandwich CIs unless noted. $^\dagger$Post hoc. $^\ddagger$Stratified bootstrap CI; sandwich SE 1,812. $X_\wedge$ uses the recovered secondary labels.}\label{tab:reg}
+\centering
+\begin{tabular}{lrrr}
+\toprule
+Measurement of AI-relatedness & AI notices & $\hat\beta$ & 95\% CI or (SE) \\
+\midrule
+M1 English dictionary (naive) & 249 & $-1.7$ & [$-7.3$, 3.9] \\
+M2 Multilingual dictionary (naive) & 470 & $-4.9$ & [$-8.9$, $-0.8$] \\
+M4 Prototype similarity (naive) & 1,575 & $-1.2$ & [$-3.6$, 1.3] \\
+M5 Embedding + LR (naive) & 31 & 2.7 & [$-12.2$, 17.6] \\
+M6 TF-IDF + LR (naive) & 34 & $-11.4$ & [$-24.2$, 1.3] \\
+Labelled notices only (weighted) & -- & 3.1 & [$-8.0$, 14.1] \\
+DSL with M5 (pre-specified) & -- & $-124.2$ & [$-495$, 429]$^\ddagger$ \\
+DSL with M5, majority reference$^\dagger$ & -- & $-42.2$ & (177.2) \\
+DSL with M5, agreement reference ($X_\wedge$) & -- & 6.0 & [$-6.7$, 18.8] \\
+DSL with M5u$^\dagger$ & -- & $-24.9$ & [$-103.1$, 53.4] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Robustness and Post hoc Analyses}
+\label{sec:robust}
+Table~\ref{tab:sens} summarises how the key estimates depend on the reference. Under the post hoc majority reference, M2 remained the best method, H1 remained unsupported ($\Delta_{\mathrm{H1}}=0.06$, CI $-0.61$ to 0.29), and the DSL prevalence fell to 1.84\%, still exceeding the M1 share (CI of the difference 0.38--1.83 points). Omitting a single stratum-D positive lowered the DSL prevalence from 2.32\% to 2.11\%, whereas omitting a stratum-C positive changed it only to 2.31\%; hence the unparsed stratum-C notice cannot materially affect the estimates. With the recovered secondary labels, the agreement reference $X_\wedge$ kept one stratum-D positive; it gave a DSL prevalence of 1.40\% (CI 1.09--1.91\%), the highest M2 F1 (0.73), and a lower recall of M1 for non-English than for English notices ($\Delta_{\mathrm{H1}}=-0.32$, CI $-0.61$ to $-0.06$); the union reference $X_\vee$ matched the primary analysis. Leave-one-out CIs were not computed. Replacing the encoder with paraphrase-multilingual-MiniLM raised M5's F1 to 0.30 but left M2 the best method. Restricting H2 to non-English notices gave F1 values of 0.40 (M1), 0.66 (M2), and 0.05 (M5). A logit plug-in model reproduced the sign pattern of Table~\ref{tab:reg} (M2 odds ratio 0.77, SE of log-odds 0.11). M5u remained below M2 in F1 (difference $-0.28$, CI $-0.39$ to $-0.18$); using its probabilities in DSL gave a prevalence of 1.31\% (CI 0.37--2.36\%).
+
+\begin{table}[t]
+\caption{Sensitivity of key estimates to the reference labels. H3: DSL prevalence minus M1 share (points). LOO: one stratum-C or stratum-D positive omitted at a time (each gave identical values within its stratum). --: not computed. $^\dagger$Post hoc. $X_\wedge$/$X_\vee$ use the recovered secondary labels (missing secondary: primary label).}\label{tab:sens}
+\centering
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrr}
+\toprule
+Reference & Pos. & M1 recall & M2 F1 [95\% CI] & DSL \% [95\% CI] & H3 [95\% CI] \\
+\midrule
+Primary $X$ & 364 & 0.28 & 0.63 [0.50, 0.78] & 2.32 [1.57, 3.21] & 1.49 [0.73, 2.38] \\
+Majority$^\dagger$ & 359 & 0.30 & 0.66 [0.54, 0.82] & 1.84 [1.21, 2.66] & 1.01 [0.38, 1.83] \\
+$X_\wedge$ & 336 & 0.39 & 0.73 [0.62, 0.80] & 1.40 [1.09, 1.91] & 0.57 [0.26, 1.08] \\
+$X_\vee$ & 374 & 0.28 & 0.64 [0.51, 0.79] & 2.36 [1.61, 3.26] & 1.52 [0.78, 2.43] \\
+LOO D$^\dagger$ & -- & 0.31 & -- & 2.11 & 1.28 \\
+LOO C$^\dagger$ & -- & 0.28 & -- & 2.31 & 1.48 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%======================================================================
+\section{Discussion}
+\subsubsection{Measurement.} The confirmatory result that survives multiplicity correction is H3: an English keyword list identified about one third of the AI-related notices estimated from the design-based sample. Its direction was stable across reference definitions, but its magnitude depends on a handful of stratum-D labels (Table~\ref{tab:sens}). Adding core terms in the EU languages doubled recall at similar observed precision, so most of the gain came from handling language rather than from a more complex model. This is consistent with the multilingual composition of TED \cite{ahmia2018} and with the transparency--recall trade-off discussed for dictionary measures \cite{gentzkow2019}. The language-specific gap predicted by H1 appeared only under the agreement reference $X_\wedge$; under the primary and majority references it was masked by the uncertainty from a few heavily weighted positives. The large English--non-English recall gap of M4 is consistent with a language bias of its English prototypes, but our design cannot establish that cause.
+
+\subsubsection{Why the supervised classifiers failed.} Contrary to H2, the embedding and TF-IDF classifiers underperformed the multilingual dictionary. Two features of the design explain this post hoc. First, training with inverse-probability weights gave each stratum-D notice a weight of about 115, whereas no notice in the dictionary strata had a weight above two ($\pi_h>0.5$), which pushed predicted probabilities towards zero; dropping the weights alone raised F1 from 0.06 to 0.36, and threshold tuning added nothing. Second, with 364 positives, most of which contain explicit AI terms, a linear classifier on general-purpose sentence embeddings learned little beyond the dictionary signal. These results do not show that supervised measurement is ineffective in general; they show that, at this label budget, weighting choices that are appropriate for estimation can be harmful for training, an implementation risk that is easy to overlook.
+
+\subsubsection{Downstream inference.} The naive multilingual-dictionary regression produced a statistically significant negative association between AI-relatedness and single bidding, whereas design-based estimates were too imprecise to determine its direction. DSL gains precision over HT only when $\hat{g}$ predicts the rare positives within the low-probability stratum \cite{egami2023,audinet2025}; here M5 did not, so DSL matched HT for prevalence and became unstable for regression, where four contested labels determined much of the variance. The practical lesson is that a significant coefficient obtained with a keyword indicator should not be read as evidence about AI procurement when the measurement error has not been quantified \cite{battaglia2025}. For procurement monitoring, the results favour a multilingual dictionary for screening, combined with a labelled probability sample that devotes more of the budget to the unflagged mass, where most of the uncertainty lies.
+
+%======================================================================
+\section{Limitations}
+The reference labels come from an LLM codebook annotation, not from expert coders. Agreement with a second LLM was moderate for English notices, and the third-LLM adjudication was post hoc; all three models may share errors, so the construct is ``AI-related according to this codebook and these annotators''. The nine disclosed cases show that prevalence conclusions depend on this choice. The label sensitivity analysis is not exhaustive. Bootstrap intervals ignore the finite-population correction, and sandwich intervals under-covered in our synthetic check. The frame covers only notices in two CPV divisions published in TED, i.e., mostly above EU thresholds, so AI purchases classified elsewhere or below thresholds are not observed, and notice shares are not contract counts or values. The regression excludes frame notices without exactly one valid tender count, which may introduce selection; a single count does not guarantee a single lot; and the controls omit buyer experience and supplier history, so omitted-variable bias is possible. All associations are non-causal. The dictionaries were written by the authors and may contain translation errors, and the stratification used M1, M2, and M4 scores, which makes the precision of estimates for other methods dependent on this design. Finally, a single small encoder and linear classifiers were tested, and the weight--threshold ablation was incomplete; fine-tuned or larger models may perform differently.
+
+%======================================================================
+\section{Conclusion}
+We evaluated how AI-related public procurement notices are identified in 54,160 multilingual TED award notices, using a pre-specified stratified reference sample and design-based estimation. A multilingual dictionary roughly doubled the recall of the English keyword approach, and the English approach captured about one third of the estimated AI-related notices, a gap whose direction was robust to contested labels but whose size was not. An apparent negative association between AI-relatedness and single bidding under naive measurement could not be confirmed after accounting for measurement error. Future work should obtain expert-adjudicated labels, draw an additional probability sample from the unflagged stratum, complete the weight--threshold ablation, test fine-tuned multilingual classifiers, and extend the analysis to national systems such as the Korean KONEPS.
+
+\begin{credits}
+\subsubsection{\ackname} The authors thank the Publications Office of the European Union for providing open access to TED notices. This research received no specific grant from any funding agency in the public, commercial, or not-for-profit sectors.
+
+\subsubsection{Author contributions.} Jinkyu Lee designed the study, carried out the experiments and the analysis, and wrote the manuscript. Chang Soo Sung reviewed the manuscript and provided feedback for its revision.
+
+\subsubsection{Data and code availability.} Code, prompts, dictionaries, the analysis plan and its amendment, annotation logs, and notice-level derived data (notice identifiers, scores, and labels, without notice texts) are available at \url{https://github.com/leejinkyu0612-hue/ted-ai-procurement-measurement}.
+
+\subsubsection{Use of generative AI.} Two LLMs (Claude Haiku 5.5 and Gemini 2.5 Flash-Lite, accessed through OpenRouter) were used as research instruments to annotate the reference sample, as described in Sect.~3.2. In addition, the authors used ChatGPT (OpenAI) and Claude (Anthropic) to assist with literature search, drafting, language editing, code generation, and structured internal review. All reported numbers are taken from logged outputs of the released code, and all references were checked against their DOI or publisher pages. The authors reviewed all content and take full responsibility for the publication.
+
+\subsubsection{\discintname} Jinkyu Lee is the founder and CEO of HappyAI; the authors declare no other competing interests.
+\end{credits}
+
+\bibliographystyle{splncs04}
+\bibliography{refs}
+\end{document}

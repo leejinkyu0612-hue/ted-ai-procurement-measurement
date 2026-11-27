@@ -1,0 +1,28 @@
+\section{Experimental Setup}
+\subsection{Data}
+We retrieved all TED contract award notices (eForms type \texttt{can-standard}) published between 1 January 2024 and 31 December 2025 whose CPV classification falls under IT services (72000000) or software packages (48000000), using the public TED Search API v3. TED notices may be reused for commercial and non-commercial purposes under the reuse policy of the European Commission. After deduplication, 55,508 notices from 50 buyer countries in 23 languages remained; excluding notices with fewer than ten characters of title and description left an analysis frame of $N=54{,}160$, of which 3,308 (6.1\%) were in English. The text of a notice is its procedure title and description in its first official language (median 378 characters, truncated at 2,000). No personal data are used, and notice texts are not redistributed.
+
+The regression sample contains frame notices that report exactly one count of received tenders between 1 and 100, which excludes multi-lot notices with lot-level counts and implausible values flagged in prior TED work \cite{potin2023}; it comprises 30,388 notices, 46.2\% of which received a single tender. Controls are fixed effects for buyer country (absorbing institutional differences and the currency of the contract value), CPV division (market structure), procedure type, buyer legal type, and publication quarter, plus log contract value with a missing-value indicator; these controls follow standard procurement-competition specifications \cite{fazekas2016,decarolis2022}.
+
+\subsection{Sample, Annotation, and Implementation}
+Table~\ref{tab:design} reports the sampling design. The 1,200 sampled notices were annotated by both LLMs through OpenRouter between 11:54 and 12:16 KST on 27 November 2026 (2,400 requests; total cost US\$0.14). One primary annotation could not be parsed, leaving 1,199 labelled notices, 364 of which were coded AI-related. The secondary model returned unparsable free text for 86 notices. Embeddings were computed on a shared 20-thread CPU with eight threads (no GPU). Bootstrap confidence intervals (CIs) use 2,000 resamples within strata of the labelled sample; one-sided bootstrap $p$-values for H1--H3 are Holm-adjusted.
+
+\begin{table}[t]
+\caption{Stratified reference sample. $N_h$: frame notices; $n_h$: labelled notices; $\pi_h=n_h/N_h$ (design); Pos.: notices coded AI-related by the primary annotator; Est.: weighted estimate of AI-related notices in the stratum.}\label{tab:design}
+\centering
+\begin{tabular}{llrrrrr}
+\toprule
+Stratum & Definition & $N_h$ & $n_h$ & $\pi_h$ & Pos. & Est. \\
+\midrule
+A & English-dictionary hit (M1) & 450 & 250 & 0.556 & 172 & 310 \\
+B & Multilingual-dictionary hit only (M2) & 428 & 250 & 0.584 & 183 & 313 \\
+C & No hit; M4 score in top 3\% & 1,526 & 249 & 0.164 & 5 & 31 \\
+D & Remaining notices & 51,756 & 450 & 0.009 & 4 & 460 \\
+\midrule
+Total & & 54,160 & 1,199 & & 364 & 1,114 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Pre-specified Hypotheses}
+The analysis plan (fixed before annotation and committed to the project repository) stated: \textbf{H1} the recall of M1 is lower for non-English than for English notices; \textbf{H2} M5 attains higher F1 than M1 (H2a) and M2 (H2b); \textbf{H3} the DSL prevalence exceeds the M1 prevalence; and \textbf{H4} the DSL coefficient on AI-relatedness in the single-bidding model differs from zero (two-sided). One amendment, recorded before the affected results were computed, restricted M3 to the labelled sample because its projected CPU time for the frame exceeded the plan's six-hour rule. Analyses added after inspecting results are labelled post hoc.

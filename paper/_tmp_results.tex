@@ -1,0 +1,58 @@
+\section{Results}
+\subsection{Reference Annotation}
+The two annotators agreed on 96.9\% of the 1,113 notices with both labels (unweighted $\kappa=0.92$). Weighted to the frame, $\kappa$ was 0.73, and it was lower for English (0.48, $n=232$) than for non-English notices (0.78, $n=881$). Disagreement was concentrated in the unflagged strata: the four stratum-D notices coded AI-related by the primary annotator (e.g., a train-running forecasting module, biometric face detection support, and a genetics-analysis software licence) were all coded not AI-related, or left unparsed, by the secondary annotator. Because each stratum-D notice carries a weight of about 115, these four labels account for 460 of the 1,114 estimated AI notices (41\%).
+
+\subsection{Classification Accuracy (H1, H2)}
+Table~\ref{tab:acc} reports design-weighted accuracy. The multilingual dictionary (M2) achieved the highest F1 (0.63, 95\% CI 0.50--0.78), doubling the recall of the English dictionary (0.56 vs.\ 0.28) at similar precision (0.71 vs.\ 0.69). H1 was not supported under the primary reference: the recall of M1 was 0.25 for English and 0.28 for non-English notices (difference 0.04, CI $-0.55$ to 0.27), largely because one English stratum-D positive carries a large weight. H2 was not supported, and the observed difference had the opposite sign: the pre-specified design-weighted classifiers M5 and M6 predicted almost no positives at the 0.5 threshold (recall 0.03 and 0.05; F1 0.06 and 0.10), although M5 had the highest threshold-free AUPRC (0.33). The F1 differences M5$-$M1 ($-0.34$, CI $-0.45$ to $-0.26$) and M5$-$M2 ($-0.57$, CI $-0.70$ to $-0.45$) were negative (Holm-adjusted $p=1.00$ for both one-sided tests). 
+
+\begin{table}[t]
+\caption{Design-weighted accuracy against the primary reference ($n=1{,}199$). R$_\mathrm{EN}$/R$_\mathrm{non}$: recall for English/non-English notices. AUPRC only for score-based methods. $^\dagger$Post hoc variant (unweighted training, fold-internal threshold), not part of the pre-specified tests.}\label{tab:acc}
+\centering
+\begin{tabular}{lrrrrrr}
+\toprule
+Method & Precision & Recall & R$_\mathrm{EN}$ & R$_\mathrm{non}$ & F1 [95\% CI] & AUPRC \\
+\midrule
+M1 English dictionary & 0.69 & 0.28 & 0.25 & 0.28 & 0.40 [0.30, 0.53] & -- \\
+M2 Multilingual dictionary & 0.71 & 0.56 & 0.26 & 0.62 & 0.63 [0.50, 0.78] & -- \\
+
+M4 Prototype similarity & 0.08 & 0.31 & 0.94 & 0.18 & 0.13 [0.08, 0.23] & 0.07 \\
+M5 Embedding + LR & 1.00 & 0.03 & 0.05 & 0.03 & 0.06 [0.03, 0.11] & 0.33 \\
+M6 TF-IDF + LR & 0.97 & 0.05 & 0.03 & 0.05 & 0.10 [0.06, 0.16] & 0.27 \\
+M5u$^\dagger$ Embedding + LR & 0.41 & 0.30 & -- & -- & 0.35 [0.25, 0.50] & 0.34 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Prevalence (H3)}
+The design-based estimates of the share of AI-related notices were 2.06\% (Horvitz--Thompson, labels only; CI 1.38--2.94\%) and 2.32\% (DSL; CI 1.56--3.21\%). Naive shares were 0.83\% for M1, 1.62\% for M2, 6.51\% for M4, and below 0.2\% for M5 and M6. The DSL estimate exceeded the M1 share by 1.49 percentage points (CI 0.73--2.38; Holm-adjusted $p=0.002$), supporting H3: the English dictionary captures roughly one third of the estimated AI notices.
+
+\subsection{AI-Relatedness and Single Bidding (H4)}
+Table~\ref{tab:reg} reports the linear probability coefficients. With naive plug-in indicators, the multilingual dictionary suggested that AI-related contracts were 4.9 percentage points less likely to receive a single tender (CI $-8.9$ to $-0.8$), whereas the English dictionary ($-1.7$, CI $-7.3$ to 3.9) and the other methods gave estimates whose CIs included zero. The labelled-only estimate was 3.1 points (CI $-8.0$ to 14.1; $n=630$). The pre-specified DSL estimate was uninformative ($\hat\beta=-1.24$, SE 17.99): the near-zero M5 probabilities for the four heavily weighted stratum-D positives produce extreme pseudo-outcomes. H4 therefore could not be assessed with useful precision.
+
+\begin{table}[t]
+\caption{Coefficient on AI-relatedness in a linear probability model of single bidding ($n=30{,}388$; fixed effects for country, CPV division, procedure, buyer type, and quarter; log value). Coefficients in percentage points with 95\% sandwich CIs. $^\dagger$Post hoc.}\label{tab:reg}
+\centering
+\begin{tabular}{lrrr}
+\toprule
+Measurement of AI-relatedness & AI notices & $\hat\beta$ & 95\% CI \\
+\midrule
+M1 English dictionary (naive) & 249 & $-1.7$ & [$-7.3$, 3.9] \\
+M2 Multilingual dictionary (naive) & 470 & $-4.9$ & [$-8.9$, $-0.8$] \\
+M4 Prototype similarity (naive) & 1,575 & $-1.2$ & [$-3.6$, 1.3] \\
+M5 Embedding + LR (naive) & 31 & 2.7 & [$-12.2$, 17.6] \\
+M6 TF-IDF + LR (naive) & 34 & $-11.4$ & [$-24.2$, 1.3] \\
+Labelled notices only (weighted) & -- & 3.1 & [$-8.0$, 14.1] \\
+DSL with M5 (pre-specified) & -- & $-123.5$ & [$-3650$, 3403] \\
+DSL with M5u$^\dagger$ & -- & $-24.9$ & [$-103.1$, 53.4] \\
+DSL with M5, agreement reference ($X_\wedge$) & -- & 5.7 & [$-7.0$, 18.4] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Robustness and Post hoc Analyses}
+\label{sec:robust}
+Results depended on the treatment of contested labels. When the reference required agreement of both annotators ($X_\wedge$), stratum D contained no positives, the estimated prevalence fell to 1.41\% (DSL; CI 1.10--1.91\%), the recall of M1 was lower for non-English than for English notices (difference $-0.32$, CI $-0.61$ to $-0.06$), and the DSL coefficient became estimable (5.7 points, CI $-7.0$ to 18.4). With the union reference ($X_\vee$), results matched the primary analysis. Replacing the encoder with paraphrase-multilingual-MiniLM raised M5's F1 to 0.30 but left M2 the best method. Restricting H2 to non-English notices gave F1 values of 0.40 (M1), 0.66 (M2), and 0.05 (M5). A logit plug-in model reproduced the sign pattern of Table~\ref{tab:reg} (M2 odds ratio 0.77, SE of log-odds 0.11). Post hoc, training M5 without design weights and tuning its threshold within folds raised F1 to 0.35, still below M2 (difference $-0.28$, CI $-0.39$ to $-0.18$); using these probabilities in DSL gave a prevalence of 1.31\% (CI 0.37--2.36\%) and a coefficient of $-24.9$ points with a CI spanning $-103$ to 53.
+
+\subsection{Computational Cost}
+On the shared CPU, the dictionaries processed the frame in 7\,s (M1) and 20\,s (M2), and multilingual-e5-small embedding took 1,229\,s (about 23\,ms per notice). Zero-shot NLI was the slowest component (about 4\,s per notice with four threads), which is why it was restricted to the labelled sample. Reference annotation of 1,200 notices by two LLMs cost US\$0.14.
+

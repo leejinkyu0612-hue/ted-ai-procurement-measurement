@@ -1,0 +1,453 @@
+{
+ "note": "R1 analyses, post hoc",
+ "pi_realized": {
+  "A": 0.5555555555555556,
+  "B": 0.5841121495327103,
+  "C": 0.16317169069462648,
+  "D": 0.008694644099234872
+ },
+ "agreement": {
+  "n_secondary_original": 1113,
+  "n_secondary_recovered": 53,
+  "n_both": 1166,
+  "kappa_w": 0.7725395075631383,
+  "kappa_w_ci": [
+   0.602498312259821,
+   0.9534122097588305
+  ],
+  "kappa_unw": 0.9225779846651709,
+  "pos_agreement_w": 0.7763760505928654,
+  "neg_agreement_w": 0.9959923315545328,
+  "kappa_w_ENG": 0.48065772106886506,
+  "kappa_w_nonENG": 0.817962164389007,
+  "secondary_missing_by_stratum": {
+   "D": 17,
+   "B": 11,
+   "A": 3,
+   "C": 2
+  },
+  "secondary_missing_by_lang_top": {
+   "CES": 5,
+   "FIN": 5,
+   "POL": 3,
+   "ELL": 3,
+   "ITA": 3,
+   "HUN": 3
+  }
+ },
+ "CD_positives": [
+  {
+   "pub": "192940-2025",
+   "stratum": "C",
+   "lang": "ENG",
+   "primary": 1.0,
+   "secondary": 1,
+   "adjudicator": 1,
+   "majority": 1,
+   "text": "THE PROVISION AND SUPPORT OF A DIGITAL DICTATION AND VOICE RECOGNITION SYSTEM. RCSI Hospitals requires a software system to manage clinical documentation, which can be dictated, typed and issued elect"
+  },
+  {
+   "pub": "755854-2025",
+   "stratum": "D",
+   "lang": "SPA",
+   "primary": 1.0,
+   "secondary": 0,
+   "adjudicator": 0,
+   "majority": 0,
+   "text": "Arrendamiento o concesión de acceso exclusivo al uso del software especializado en genética Geneyx Analysis para la Unidad de Diagnóstico Molecular y Genética Clínica del Hospital Universitario Son Es"
+  },
+  {
+   "pub": "787623-2025",
+   "stratum": "D",
+   "lang": "RON",
+   "primary": 1.0,
+   "secondary": 0,
+   "adjudicator": 0,
+   "majority": 0,
+   "text": "Servicii de furnizare platformă integrată pentru servicii electronice, furnizare licențe software și echipamente IT în cadrul proiectului „IMBUNATATIREA SERVICIILOR PUBLICE PENTRU CRESTEREA CALITATII "
+  },
+  {
+   "pub": "86787-2024",
+   "stratum": "C",
+   "lang": "ENG",
+   "primary": 1.0,
+   "secondary": 1,
+   "adjudicator": 1,
+   "majority": 1,
+   "text": "Biometric Authentication with Facial Recognition Technology. Swedavia shall procure a system and enabling possibilities for passengers to use Biometric Authentication with Facial Recognition Technolog"
+  },
+  {
+   "pub": "500255-2024",
+   "stratum": "D",
+   "lang": "ENG",
+   "primary": 1.0,
+   "secondary": 0,
+   "adjudicator": 1,
+   "majority": 1,
+   "text": "TIS NETA 2024. The intention is to ensure a train running forecast information in the RNE TIS by implementing a forecasting module to the application providing predictions for any train run having an "
+  },
+  {
+   "pub": "201930-2025",
+   "stratum": "D",
+   "lang": "CES",
+   "primary": 1.0,
+   "secondary": 1,
+   "adjudicator": 1,
+   "majority": 1,
+   "text": "Poskytování podpory systému IBS a systému pro automatickou biometrickou detekci obličejů - RD. Předmětem veřejné zakázky je zajištění technické a provozní podpory HW a SW pro systém Integrace bezpečno"
+  },
+  {
+   "pub": "327445-2025",
+   "stratum": "C",
+   "lang": "ENG",
+   "primary": 1.0,
+   "secondary": 0,
+   "adjudicator": 0,
+   "majority": 0,
+   "text": "Operation and further development of statistical model. The objective of the procurement is to enter into a contract with one tenderer for the operation (SSA-D) and further development (SSA-V) of a st"
+  },
+  {
+   "pub": "678350-2025",
+   "stratum": "C",
+   "lang": "SPA",
+   "primary": 1.0,
+   "secondary": 1,
+   "adjudicator": 1,
+   "majority": 1,
+   "text": "Servicios de asistente virtual de voz para la gestión de citas de Atención Primaria, incluye el soporte técnico. Servicio de asistente virtual / BOT de voz para gestionar las citas de atención primari"
+  },
+  {
+   "pub": "810556-2025",
+   "stratum": "C",
+   "lang": "ENG",
+   "primary": 1.0,
+   "secondary": 1,
+   "adjudicator": 1,
+   "majority": 1,
+   "text": "The provision of Darktrace Software Reseller Services. The provision of Darktrace Software Reseller Services"
+  }
+ ],
+ "primary_realized_pi": {
+  "M1": {
+   "precision": 0.6880000000000001,
+   "recall": 0.2780192627075602,
+   "f1": 0.3960112600792023,
+   "f1_ci": [
+    0.3008633780336043,
+    0.526351557125027
+   ],
+   "recall_eng": 0.24663851004705037,
+   "recall_noneng": 0.2844646841110564
+  },
+  "M2": {
+   "precision": 0.7094487471526196,
+   "recall": 0.5593575150629471,
+   "f1": 0.625525740358285,
+   "f1_ci": [
+    0.4990909373610688,
+    0.7754988588165361
+   ],
+   "recall_eng": 0.2646831736880995,
+   "recall_noneng": 0.6198818857657797
+  },
+  "H1_diff": 0.03782617406400604,
+  "H1_ci": [
+   -0.5492230481417546,
+   0.27094717190686657
+  ],
+  "HT": 0.02056115036215764,
+  "HT_ci": [
+   0.013767483642101643,
+   0.02938379736078731
+  ],
+  "HT_se_boot": 0.004217658335445224,
+  "DSL": 0.023191431401001605,
+  "DSL_ci": [
+   0.015652690644073642,
+   0.03212661616025236
+  ],
+  "DSL_se_boot": 0.004239341672028039,
+  "H3_diff": 0.014882716482242373,
+  "H3_ci": [
+   0.00734397572531441,
+   0.023817901241493127
+  ],
+  "DSL_beta": -1.2418013633029448,
+  "DSL_se": 18.1200792725381,
+  "DSL_beta_ci": [
+   -36.75715673747762,
+   34.27355401087173
+  ],
+  "cond_A": 3052886.779087098,
+  "n_pos": 364,
+  "DSL_beta_boot_ci": [
+   -4.953543801944891,
+   4.293189859485344
+  ]
+ },
+ "majority_reference": {
+  "M1": {
+   "precision": 0.664,
+   "recall": 0.3028011980054774,
+   "f1": 0.4159283126467493,
+   "f1_ci": [
+    0.31875504269579097,
+    0.5509817942582457
+   ],
+   "recall_eng": 0.25726884041896325,
+   "recall_noneng": 0.31309202474558645
+  },
+  "M2": {
+   "precision": 0.7029977220956719,
+   "recall": 0.6254972859682625,
+   "f1": 0.6619869318945183,
+   "f1_ci": [
+    0.5382922011044597,
+    0.8167614414588715
+   ],
+   "recall_eng": 0.26668004244454585,
+   "recall_noneng": 0.7065940329893253
+  },
+  "H1_diff": 0.0558231843266232,
+  "H1_ci": [
+   -0.6064482722527893,
+   0.29042014626252693
+  ],
+  "HT": 0.01821983117106535,
+  "HT_ci": [
+   0.011964932462493994,
+   0.02659939971110439
+  ],
+  "HT_se_boot": 0.0035826585141475295,
+  "DSL": 0.01840194918959486,
+  "DSL_ci": [
+   0.01208085557444875,
+   0.0265769337276181
+  ],
+  "DSL_se_boot": 0.0036567131468614312,
+  "H3_diff": 0.01009323427083563,
+  "H3_ci": [
+   0.003772140655689519,
+   0.01826821880885887
+  ],
+  "DSL_beta": -0.4220071107553681,
+  "DSL_se": 1.7721577604398848,
+  "DSL_beta_ci": [
+   -3.8954363212175425,
+   3.051422099706806
+  ],
+  "cond_A": 3052848.5568109523,
+  "n_pos": 359
+ },
+ "loo_CD_positives": [
+  {
+   "pub": "192940-2025",
+   "stratum": "C",
+   "HT_without": 0.020447994637338124,
+   "DSL_without": 0.023078275676182095,
+   "H3_without": 0.014769560757422863,
+   "M1_recall_without": 0.2795577740258298,
+   "M2_recall_without": 0.562452904423751
+  },
+  {
+   "pub": "755854-2025",
+   "stratum": "D",
+   "HT_without": 0.018437565920995647,
+   "DSL_without": 0.02106784695983962,
+   "H3_without": 0.012759132041080387,
+   "M1_recall_without": 0.310040701066557,
+   "M2_recall_without": 0.6237826632156139
+  },
+  {
+   "pub": "787623-2025",
+   "stratum": "D",
+   "HT_without": 0.01843756592099565,
+   "DSL_without": 0.02106784695983962,
+   "H3_without": 0.012759132041080387,
+   "M1_recall_without": 0.310040701066557,
+   "M2_recall_without": 0.6237826632156139
+  },
+  {
+   "pub": "86787-2024",
+   "stratum": "C",
+   "HT_without": 0.020447994637338124,
+   "DSL_without": 0.023078275676182095,
+   "H3_without": 0.014769560757422863,
+   "M1_recall_without": 0.2795577740258298,
+   "M2_recall_without": 0.562452904423751
+  },
+  {
+   "pub": "500255-2024",
+   "stratum": "D",
+   "HT_without": 0.01843756592099565,
+   "DSL_without": 0.021067846959839622,
+   "H3_without": 0.01275913204108039,
+   "M1_recall_without": 0.310040701066557,
+   "M2_recall_without": 0.6237826632156139
+  },
+  {
+   "pub": "201930-2025",
+   "stratum": "D",
+   "HT_without": 0.01843756592099565,
+   "DSL_without": 0.021067846959839622,
+   "H3_without": 0.01275913204108039,
+   "M1_recall_without": 0.310040701066557,
+   "M2_recall_without": 0.6237826632156139
+  },
+  {
+   "pub": "327445-2025",
+   "stratum": "C",
+   "HT_without": 0.020447994637338124,
+   "DSL_without": 0.023078275676182095,
+   "H3_without": 0.014769560757422863,
+   "M1_recall_without": 0.2795577740258298,
+   "M2_recall_without": 0.562452904423751
+  },
+  {
+   "pub": "678350-2025",
+   "stratum": "C",
+   "HT_without": 0.020447994637338124,
+   "DSL_without": 0.023078275676182095,
+   "H3_without": 0.014769560757422863,
+   "M1_recall_without": 0.2795577740258298,
+   "M2_recall_without": 0.562452904423751
+  },
+  {
+   "pub": "810556-2025",
+   "stratum": "C",
+   "HT_without": 0.020447994637338124,
+   "DSL_without": 0.023078275676182095,
+   "H3_without": 0.014769560757422863,
+   "M1_recall_without": 0.2795577740258298,
+   "M2_recall_without": 0.562452904423751
+  }
+ ],
+ "dsl_simulation": {
+  "true_beta": 0.1,
+  "reps": 200,
+  "mean_beta": 0.11469563958895196,
+  "median_beta": 0.15266472306012024,
+  "coverage_95": 0.86,
+  "mean_se": 2.2672630452600733,
+  "note": "X simulated from majority-reference probabilities, same strata and realized pi, predictor deliberately miscalibrated (0.3*q)"
+ },
+ "regression_flow": {
+  "frame": 54160,
+  "exactly_one_tender_field": 31661,
+  "no_tender_field": 17864,
+  "multi_tender_fields": 4635,
+  "one_field_tenders_0": 1271,
+  "one_field_tenders_gt100": 2,
+  "regression_sample": 30388,
+  "labeled_in_regression": 630
+ },
+ "and_recovered": {
+  "M1": {
+   "precision": 0.628,
+   "recall": 0.3924916107326398,
+   "f1": 0.48307056902337375,
+   "f1_ci": [
+    0.3865277943735248,
+    0.564318568915602
+   ],
+   "recall_eng": 0.6824909549391514,
+   "recall_noneng": 0.36454011559395055
+  },
+  "M2": {
+   "precision": 0.6611480637813211,
+   "recall": 0.8062161009588417,
+   "f1": 0.7265111510102219,
+   "f1_ci": [
+    0.6196621752486046,
+    0.8048609215772017
+   ],
+   "recall_eng": 0.7095378187089623,
+   "recall_noneng": 0.8155344066388709
+  },
+  "H1_diff": -0.3179508393452008,
+  "H1_ci": [
+   -0.6094740792233218,
+   -0.061984595737502174
+  ],
+  "HT": 0.01329422801990829,
+  "HT_ci": [
+   0.010560015290111701,
+   0.017980921811322097
+  ],
+  "HT_se_boot": 0.002155317073204981,
+  "DSL": 0.014047853411481712,
+  "DSL_ci": [
+   0.010939023178571056,
+   0.019102153655850065
+  ],
+  "DSL_se_boot": 0.002187931772873563,
+  "H3_diff": 0.00573913849272248,
+  "H3_ci": [
+   0.0026303082598118253,
+   0.010793438737090832
+  ],
+  "DSL_beta": 0.060282570405196856,
+  "DSL_se": 0.06514785419612773,
+  "DSL_beta_ci": [
+   -0.06740722381921349,
+   0.1879723646296072
+  ],
+  "cond_A": 3053357.3601664216,
+  "n_pos": 336
+ },
+ "or_recovered": {
+  "M1": {
+   "precision": 0.6920000000000001,
+   "recall": 0.27538028523406266,
+   "f1": 0.39397775681538444,
+   "f1_ci": [
+    0.3003456679898257,
+    0.5230910453117423
+   ],
+   "recall_eng": 0.24663851004705037,
+   "recall_noneng": 0.2811757269128326
+  },
+  "M2": {
+   "precision": 0.7290478359908884,
+   "recall": 0.5660630125223649,
+   "f1": 0.6372999111043894,
+   "f1_ci": [
+    0.5094711965713012,
+    0.7881130757563835
+   ],
+   "recall_eng": 0.2646831736880995,
+   "recall_noneng": 0.6268327202998553
+  },
+  "H1_diff": 0.03453721686578223,
+  "H1_ci": [
+   -0.5507337033264669,
+   0.2609993207655214
+  ],
+  "HT": 0.02087887562065099,
+  "HT_ci": [
+   0.014028581593730905,
+   0.029716181061024007
+  ],
+  "HT_se_boot": 0.004212371181632117,
+  "DSL": 0.023555853212461193,
+  "DSL_ci": [
+   0.016070710885727865,
+   0.032620534043301286
+  ],
+  "DSL_se_boot": 0.004243327700561654,
+  "H3_diff": 0.01524713829370196,
+  "H3_ci": [
+   0.0077619959669686335,
+   0.024311819124542056
+  ],
+  "DSL_beta": -1.3755657686821268,
+  "DSL_se": 22.775153466455333,
+  "DSL_beta_ci": [
+   -46.01486656293458,
+   43.26373502557032
+  ],
+  "cond_A": 3052869.045543354,
+  "n_pos": 374
+ },
+ "n_cpv_levels_used": 26
+}
