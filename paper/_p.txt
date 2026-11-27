@@ -1,68 +1,0 @@
-14
-
-J. Lee and C. S. Sung
-
-6. Conneau, A., Khandelwal, K., Goyal, N., Chaudhary, V., Wenzek, G., Guzmán,
-F., Grave, E., Ott, M., Zettlemoyer, L., Stoyanov, V.: Unsupervised cross-lingual
-representation learning at scale. In: Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics. pp. 84408451 (2020).
-https://doi.org/10.18653/v1/2020.acl-main.747
-7. Decarolis, F., Giorgiantonio, C.: Corruption red ags in public procurement:
-New evidence from Italian calls for tenders. EPJ Data Science 11, 16 (2022).
-https://doi.org/10.1140/epjds/s13688-022-00325-x
-8. Egami, N., Hinck, M., Stewart, B.M., Wei, H.: Using imperfect surrogates for downstream inference: Design-based supervised learning for social science applications
-of large language models. In: Advances in Neural Information Processing Systems
-36 (NeurIPS 2023) (2023)
-9. Eloundou, T., Manning, S., Mishkin, P., Rock, D.: GPTs are GPTs: Labor market impact potential of LLMs. Science 384(6702), 13061308 (2024).
-https://doi.org/10.1126/science.adj0998
-10. Fazekas, M., Tóth, I.J., King, L.P.: An objective corruption risk index using public
-procurement data. European Journal on Criminal Policy and Research 22(3), 369
-397 (2016). https://doi.org/10.1007/s10610-016-9308-z
-11. Gentzkow, M., Kelly, B., Taddy, M.: Text as data. Journal of Economic Literature
-57(3), 535574 (2019). https://doi.org/10.1257/jel.20181020
-12. Gilardi, F., Alizadeh, M., Kubli, M.: ChatGPT outperforms crowd workers for
-text-annotation tasks. Proceedings of the National Academy of Sciences 120(30),
-e2305016120 (2023). https://doi.org/10.1073/pnas.2305016120
-13. He, P., Gao, J., Chen, W.: DeBERTaV3: Improving DeBERTa using ELECTRAstyle pre-training with gradient-disentangled embedding sharing. In: The Eleventh
-International Conference on Learning Representations (ICLR 2023) (2023)
-14. Hickok, M.: Public procurement of articial intelligence systems: New risks and future proong. AI & Society 39, 12131227 (2024). https://doi.org/10.1007/s00146022-01572-2
-15. Loza Mencía, E., Holthausen, S., Schulz, A., Janssen, F.: Using data mining on
-linked open data for analyzing e-procurement information. In: Proceedings of the
-International Workshop on Data Mining on Linked Data (DMoLD 2013). CEUR
-Workshop Proceedings, vol. 1082 (2013)
-16. Muennigho, N., Tazi, N., Magne, L., Reimers, N.: MTEB: Massive text embedding benchmark. In: Proceedings of the 17th Conference of the European
-Chapter of the Association for Computational Linguistics. pp. 20142037 (2023).
-https://doi.org/10.18653/v1/2023.eacl-main.148
-17. Nai, R., Sulis, E., Genga, L.: Automated analysis with event log enrichment of
-the European public procurement processes. In: Advances in Conceptual Modeling
-(ER 2023 Workshops). LNCS, vol. 14319, pp. 178188. Springer, Cham (2023).
-https://doi.org/10.1007/978-3-031-47112-4_17
-18. Audinet de Pieuchon, N., Daoud, A., Jerzak, C.T., Johansson, M., Johansson, R.:
-Benchmarking debiasing methods for LLM-based parameter estimates. In: Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing (2025). https://doi.org/10.18653/v1/2025.emnlp-main.1000
-19. Potin, L., Labatut, V., Morand, P.H., Largeron, C.: FOPPA: An open database of
-French public procurement award notices from 20102020. Scientic Data 10, 303
-(2023). https://doi.org/10.1038/s41597-023-02213-z
-20. Reimers, N., Gurevych, I.: Making monolingual sentence embeddings multilingual
-using knowledge distillation. In: Proceedings of the 2020 Conference on Empir-
-
-Measuring AI-Relatedness in Multilingual Procurement Notices
-
-15
-
-ical Methods in Natural Language Processing (EMNLP). pp. 45124525 (2020).
-https://doi.org/10.18653/v1/2020.emnlp-main.365
-21. Siciliani, L., Tanzi, E., Basile, P., Lops, P.: Automatic generation of common procurement vocabulary codes. In: Proceedings of the 9th Italian Conference on Computational Linguistics (CLiC-it 2023). CEUR Workshop Proceedings, vol. 3596
-(2023)
-22. Törnberg, P.: ChatGPT-4 outperforms experts and crowd workers in annotating
-political Twitter messages with zero-shot learning. arXiv:2304.06588 (2023)
-23. Wang, L., Yang, N., Huang, X., Yang, L., Majumder, R., Wei, F.: Multilingual E5
-text embeddings: A technical report. arXiv:2402.05672 (2024)
-24. Yin, W., Hay, J., Roth, D.: Benchmarking zero-shot text classication: Datasets,
-evaluation and entailment approach. In: Proceedings of the 2019 Conference on
-Empirical Methods in Natural Language Processing and the 9th International Joint
-Conference on Natural Language Processing (EMNLP-IJCNLP). pp. 39123921
-(2019). https://doi.org/10.18653/v1/D19-1404
-25. Ziems, C., Held, W., Shaikh, O., Chen, J., Zhang, Z., Yang, D.: Can large language
-models transform computational social science? Computational Linguistics 50(1),
-237291 (2024). https://doi.org/10.1162/coli_a_00502
-
-

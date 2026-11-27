@@ -1,26 +1,0 @@
-Measuring AI-Relatedness in Multilingual Procurement Notices
-
-15
-
-19. Potin, L., Labatut, V., Morand, P.H., Largeron, C.: FOPPA: An open database of
-French public procurement award notices from 20102020. Scientic Data 10, 303
-(2023). https://doi.org/10.1038/s41597-023-02213-z
-20. Reimers, N., Gurevych, I.: Making monolingual sentence embeddings multilingual
-using knowledge distillation. In: Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing (EMNLP). pp. 45124525 (2020).
-https://doi.org/10.18653/v1/2020.emnlp-main.365
-21. Siciliani, L., Tanzi, E., Basile, P., Lops, P.: Automatic generation of common procurement vocabulary codes. In: Proceedings of the 9th Italian Conference on Computational Linguistics (CLiC-it 2023). CEUR Workshop Proceedings, vol. 3596
-(2023)
-22. Törnberg, P.: ChatGPT-4 outperforms experts and crowd workers in annotating
-political Twitter messages with zero-shot learning. arXiv:2304.06588 (2023)
-23. Wang, L., Yang, N., Huang, X., Yang, L., Majumder, R., Wei, F.: Multilingual E5
-text embeddings: A technical report. arXiv:2402.05672 (2024)
-24. Yin, W., Hay, J., Roth, D.: Benchmarking zero-shot text classication: Datasets,
-evaluation and entailment approach. In: Proceedings of the 2019 Conference on
-Empirical Methods in Natural Language Processing and the 9th International Joint
-Conference on Natural Language Processing (EMNLP-IJCNLP). pp. 39123921
-(2019). https://doi.org/10.18653/v1/D19-1404
-25. Ziems, C., Held, W., Shaikh, O., Chen, J., Zhang, Z., Yang, D.: Can large language
-models transform computational social science? Computational Linguistics 50(1),
-237291 (2024). https://doi.org/10.1162/coli_a_00502
-
-

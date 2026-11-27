@@ -1,0 +1,25 @@
+import sys
+s=open('S14.tex',encoding='utf-8').read()
+def rep(a,b):
+    global s
+    c=s.count(a)
+    if c!=1: sys.exit(f'count {c}: {a[:70]}')
+    s=s.replace(a,b)
+rep("Integrated e-services platform and licences", "Integrated e-services platform and licenses")
+rep(r"M2 Multilingual dictionary & 0.71 & 0.56 & 0.26 & 0.62 & 0.63 [0.50, 0.78] & -- \\", r"M2 Multilingual dictionary & 0.71 & 0.56 & 0.26 & 0.62 & \textbf{0.63} [0.50, 0.78] & -- \\")
+rep(r"M6 TF-IDF + LR & 0.97 & 0.05 & 0.03 & 0.05 & 0.10 [0.06, 0.16] & 0.27 \\", r"M6 TF-IDF + LR & 0.97 & 0.05 & 0.03 & 0.05 & 0.10 [0.06, 0.16] & 0.27 \\" + "\n" + r"\midrule")
+rep(r"AUPRC only for score-based methods.", r"AUPRC only for score-based methods; best F1 in bold.")
+rep(r"AI indicator & AI notices & $\hat\beta$ & 95\% CI or (SE) \\" + "\n" + r"\midrule",
+    r"AI indicator & AI notices & $\hat\beta$ & 95\% CI or (SE) \\" + "\n" + r"\midrule" + "\n" + r"\multicolumn{4}{l}{\textit{Plug-in indicators and labeled data}}\\")
+rep(r"Labeled notices only (weighted) & -- & 3.1 & [$-8.0$, 14.1] \\", r"Labeled notices only (weighted) & -- & 3.1 & [$-8.0$, 14.1] \\" + "\n" + r"\midrule" + "\n" + r"\multicolumn{4}{l}{\textit{Design-based supervised learning (DSL)}}\\")
+rep(r"M1 English dictionary (plug-in) &", r"M1 English dictionary &")
+rep(r"M2 Multilingual dictionary (plug-in) &", r"M2 Multilingual dictionary &")
+rep(r"M4 Prototype similarity (plug-in) &", r"M4 Prototype similarity &")
+rep(r"M5 Embedding + LR (plug-in) &", r"M5 Embedding + LR &")
+rep(r"M6 TF-IDF + LR (plug-in) &", r"M6 TF-IDF + LR &")
+rep(r"DSL with M5 (pre-specified) &", r"M5 (pre-specified) &")
+rep(r"DSL with M5, full-frame cross-fitting$^\dagger$ &", r"M5, full-frame cross-fitting$^\dagger$ &")
+rep(r"DSL with M5, $X_{\mathrm{adj}}$ reference$^\dagger$ &", r"M5, $X_{\mathrm{adj}}$ reference$^\dagger$ &")
+rep(r"DSL with M5, $X_\wedge$ reference &", r"M5, $X_\wedge$ reference &")
+rep(r"DSL with M5u$^\dagger$ &", r"M5u$^\dagger$ &")
+open('S15.tex','w',encoding='utf-8').write(s); print('ok')

@@ -1,6 +1,0 @@
-Inclusion probabilities are $\pi_h=n_h/N_h$, where $n_h$ counts \emph{labelled} notices; in stratum C one of the 250 drawn notices received no parsable primary label, so $\pi_C$ is nonresponse-adjusted and valid if the failure is unrelated to $X$ within the stratum (Table~\ref{tab:design}). Accuracy metrics weight labelled notices by $1/\pi_i$. For prevalence and regression, DSL replaces the unobserved $X_i$ with the pseudo-outcome
-\begin{equation}
-\tilde{X}_i=\hat{g}(T_i)+\frac{R_i}{\pi_i}\bigl(X_i-\hat{g}(T_i)\bigr),
-\label{eq:pseudo}
-\end{equation}
-where $\hat{g}$ is the cross-fitted M5 pro
