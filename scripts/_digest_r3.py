@@ -1,0 +1,7 @@
+import json
+r=json.load(open("results/r3_analyses.json",encoding="utf-8")); L=[]
+f=r["fullframe_crossfit_prevalence"]; L.append(f"[Full-frame cross-fitting: every frame notice in one of 5 folds; g from model trained on labelled notices outside the fold] DSL prevalence {f['dsl']*100:.2f}% (CI {f['ci'][0]*100:.2f}-{f['ci'][1]*100:.2f}%), excess over M1 share {f['H3_diff']*100:.2f} points; DSL-LPM full controls beta {r['fullframe_crossfit_lpm_full']['beta_pp']:.1f} pp (SE {r['fullframe_crossfit_lpm_full']['se_pp']:.1f})")
+for k,v in r["schur"].items(): L.append(f"[Schur complement of the AI column in A (information left after partialling out controls), pre-specified g, {k}] A_xx={v['Axx']:.1f}, Schur={v['schur']:.1f}; beta {v['beta_pp']:.1f} pp (SE {v['se_pp']:.1f}). (Negative Schur complement = A not positive definite in the AI direction, because X-tilde replaces X^2 in the diagonal while pseudo-outcomes can be negative or >1.)")
+b=r["refit_bootstrap_dsl_prevalence"]; L.append(f"[Bootstrap refitting M5 inside each of {b['reps']} replicates] DSL prevalence 95% CI {b['ci'][0]*100:.2f}-{b['ci'][1]*100:.2f}%, SE {b['se']*100:.2f} points (fixed-g bootstrap gave 1.56-3.21%)")
+u=r["unparsed_C_bounds"]; L.append(f"[Unparsed stratum-C notice] HT prevalence {u['coded_0']['HT']*100:.3f}% if coded 0, {u['coded_1']['HT']*100:.3f}% if coded 1 (reference {r['HT_reference']*100:.3f}%)")
+open("results/r3_digest.txt","w",encoding="utf-8").write("\n".join(L)); print("\n".join(L))
